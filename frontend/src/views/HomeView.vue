@@ -1,19 +1,29 @@
 <script setup>
-import { useAuthStore } from "../store/auth";
+import { useUserStore } from "@/store/user";
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
+import { ref } from "vue";
 
-const authStore = useAuthStore();
+const userStore = useUserStore();
 const router = useRouter();
+const user = ref({
+  isAuthenticated: false, 
+  token: userStore.getToken || "", 
+  info: userStore.getUser || {}
+})
 
 const logout = () => {
-  authStore.logout(router);
+  userStore.removeToken();
+  userStore.removeUser();
   router.push("/login");
 };
 
 onMounted(() => {
-  if (!authStore.isAuthenticated) {
+  if (!user.value.token) {
     router.push("/login");
+  }
+  else{
+    user.value.isAuthenticated = true; 
   }
 });
 
@@ -21,8 +31,8 @@ onMounted(() => {
 
 <template>
   <h1> welcome to home page </h1>
-  <div v-if="authStore.isAuthenticated">
-    <p v-if="authStore.user">{{ `hi, ${authStore.user.username}` }}</p>
+  <div v-if="user.isAuthenticated">
+    <p v-if="userStore.user">{{ `hi, ${userStore.getUser.username}` }}</p>
     <p> youre logged in </p>
     <button @click="logout">Logout</button>
   </div>

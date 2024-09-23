@@ -8,16 +8,13 @@ import gql from "graphql-tag";
 const route = useRoute();
 const username = route.params.username;
 const { result, loading, error } = useQuery(gql`
-  query {
+query {
     authorByUsername(
       username: "${username}"
     ) {
-        bio
-        user {
-          firstName
-          lastName
-          username
-        }
+        
+        username
+        
         programSet {
           title
           slug
@@ -25,19 +22,15 @@ const { result, loading, error } = useQuery(gql`
       }
   }
 `);
+
 </script>
 
 <template>
   <div v-if="loading">Loading...</div>
   <div v-else-if="error">{{ error.message }}</div>
   <section v-else :set="author = result.authorByUsername">
-    <h2>{{ author.user.username }}</h2>
-    <template v-if="author.user.firstName && author.user.lastName">
-      <h3>{{ author.user.firstName }} {{ author.user.lastName }}</h3>
-    </template>
-    <p v-if="author.bio">
-      {{ author.bio }}
-    </p>
+    <h2>{{ author.username }}</h2>
+    
     <h3>Posts</h3>
     <ProgramList
       v-if="author.programSet"

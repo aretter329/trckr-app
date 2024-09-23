@@ -3,8 +3,8 @@ import { computed } from "vue";
 import { RouterLink } from "vue-router";
 
 const props = defineProps(["author"]);
-const firstName = props.author.user.firstName;
-const lastName = props.author.user.lastName;
+/*const firstName = props.author.user.firstName || "";
+const lastName = props.author.user.lastName || "";
 const displayName = computed(() => {
   if (firstName && lastName) {
     return `${firstName} ${lastName}`;
@@ -12,12 +12,14 @@ const displayName = computed(() => {
     return `${props.author.user.username}`;
   }
 });
+*/
+//const displayName = props.author.username
 </script>
 
 <template>
   <RouterLink
-    :to="{ name: 'author', params: { username: author.user.username } }"
+    :to="{ name: 'author', params: { username: author.username } }"
   >
-    {{ displayName }}
+    {{ author.username }}
   </RouterLink>
 </template>

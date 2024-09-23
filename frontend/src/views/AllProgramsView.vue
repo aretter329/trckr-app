@@ -11,11 +11,9 @@ const { result, loading, error } = useQuery(gql`
       title
       slug
       author {
-        user {
-          username
-          firstName
-          lastName
-        }
+        username
+        firstName
+        lastName
       }
     }
   }

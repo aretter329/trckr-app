@@ -41,9 +41,9 @@ class CreateProgram(graphene.Mutation):
         tags = graphene.List(graphene.String)
         slug = graphene.String(required=True)
 
-    def mutate(self, info, title, body, author, tags):
-        author = models.User.objects.select_related("user").get(user__username=author)
-        program = models.Program(title=title, body=body, author=author)
+    def mutate(self, info, title, body, author, tags, slug):
+        author = models.User.objects.get(username=author)
+        program = models.Program(title=title, body=body, author=author, slug=slug)
         program.save()
         for tag in tags:
             program.tags.add(models.Tag.objects.get(name=tag))
@@ -95,9 +95,7 @@ class Query(graphene.ObjectType):
         )
 
     def resolve_author_by_username(root, info, username):
-        return models.User.objects.select_related("user").get(
-            user__username=username
-        )
+        return models.User.objects.get(username=username)
 
     def resolve_programs_by_slug(root, info, slug):
         return (

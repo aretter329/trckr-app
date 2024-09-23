@@ -17,20 +17,17 @@
 </template>
 
 <script setup>
-//import { useAuthStore } from "../store/auth";
 import { ref } from 'vue';
-//import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 import { USER_SIGNIN } from '@/mutations';
 import { useUserStore } from '@/store/user';
 import { useMutation } from "@vue/apollo-composable";
 
 const userStore = useUserStore();
-
-//const authStore = useAuthStore();
 const username = ref('');
 const password = ref('');
 const error = ref('');
-//const router = useRouter();
+const router = useRouter();
 
 const loginUser = useMutation(USER_SIGNIN, {
   variables() {
@@ -51,13 +48,11 @@ const login = async () => {
     password.value = '';
     userStore.setToken(user.data.tokenAuth.token);
     userStore.setUser(user.data.tokenAuth.user);
-    console.log(user);
+    router.push('/');
   }
   catch (error) {
     console.error(error);
   }
-  
-
 };
 
 /*

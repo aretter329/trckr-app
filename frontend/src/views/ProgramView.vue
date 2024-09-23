@@ -18,11 +18,9 @@ const { result, loading, error } = useQuery(gql`
         slug
         body
         author {
-          user {
             username
             firstName
             lastName
-          }
         }
         tags {
           name

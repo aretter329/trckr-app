@@ -2,13 +2,16 @@
 import { ref } from 'vue';
 import { useQuery, useMutation } from "@vue/apollo-composable";
 import gql from "graphql-tag";
+import { useUserStore } from "@/store/user";
 
 const title = ref('');
 const body = ref('');
+const userStore = useUserStore();
+const tags = ref([]);
 
 const CREATE_PROGRAM = gql`
-  mutation CreateProgram($title: String!, $body: String!, $slug: String!) {
-    createProgram(title: $title, body: $body, slug: $slug) {
+  mutation CreateProgram($title: String!, $body: String!, $slug: String!, $author: String!, $tags: [String!]) {
+    createProgram(title: $title, body: $body, slug: $slug, author: $author, tags: $tags) {
       program {
         id
         title
@@ -24,7 +27,9 @@ const createProgram = useMutation(CREATE_PROGRAM, {
     return {
       title: title.value,
       body: body.value,
-      slug: title.value.toLowerCase().replace(/\s+/g, '-')
+      slug: title.value.toLowerCase().replace(/\s+/g, '-'),
+      author: userStore.getUser.username,
+      tags: tags.value
     };
   }
 });
@@ -35,7 +40,8 @@ const addProgram = async () => {
       title: title.value,
       body: body.value,
       slug: title.value.toLowerCase().replace(/\s+/g, '-'),
-      author: getCurrentUser() // Get the current user
+      author: userStore.getUser.username, // Get the current user
+      tags: tags.value
     });
     title.value = '';
     body.value = '';
