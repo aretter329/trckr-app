@@ -5,12 +5,18 @@ import ProgramView from "../views/ProgramView.vue";
 import ProgramsByTagView from "../views/ProgramsByTagView.vue";
 import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
+import HomeView from "../views/HomeView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/",
+      name: "home",
+      component: HomeView,
+    },
+    {
+      path: "/all-programs",
       name: "programs",
       component: AllProgramsView,
     },

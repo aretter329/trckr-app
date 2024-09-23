@@ -2,6 +2,7 @@ import graphene
 from django.contrib.auth import get_user_model
 from graphene_django import DjangoObjectType
 from coach import models
+import graphql_jwt
 
 class UserType(DjangoObjectType):
     class Meta:
@@ -9,7 +10,7 @@ class UserType(DjangoObjectType):
 
 class AuthorType(DjangoObjectType):
     class Meta:
-        model = models.Profile
+        model = models.User
 
 class ProgramType(DjangoObjectType):
     class Meta:
@@ -41,16 +42,43 @@ class CreateProgram(graphene.Mutation):
         slug = graphene.String(required=True)
 
     def mutate(self, info, title, body, author, tags):
-        author = models.Profile.objects.select_related("user").get(user__username=author)
+        author = models.User.objects.select_related("user").get(user__username=author)
         program = models.Program(title=title, body=body, author=author)
         program.save()
         for tag in tags:
             program.tags.add(models.Tag.objects.get(name=tag))
         return CreateProgram(program=program)
+
+class CreateUser(graphene.Mutation):
+    user = graphene.Field(UserType)
+
+    class Arguments:
+        username = graphene.String(required=True)
+        email = graphene.String(required=True)
+        password = graphene.String(required=True)
+
+    def mutate(self, info, username, email, password):
+        user = models.User(
+            username=username, 
+            email=email
+        )
+        user.set_password(password)
+        user.save()
+        return CreateUser(user=user)
+class ObtainJSONWebToken(graphql_jwt.JSONWebTokenMutation):
+    user = graphene.Field(UserType)
+
+    @classmethod
+    def resolve(cls, root, info, **kwargs):
+        return cls(user=info.context.user)
     
 class Mutation(graphene.ObjectType):
     create_tag = CreateTag.Field()
     create_program = CreateProgram.Field()
+    create_user = CreateUser.Field()
+    token_auth = ObtainJSONWebToken.Field()
+    verify_token = graphql_jwt.Verify.Field()
+    refresh_token = graphql_jwt.Refresh.Field()
 
 class Query(graphene.ObjectType):
     all_programs = graphene.List(ProgramType)
@@ -67,7 +95,7 @@ class Query(graphene.ObjectType):
         )
 
     def resolve_author_by_username(root, info, username):
-        return models.Profile.objects.select_related("user").get(
+        return models.User.objects.select_related("user").get(
             user__username=username
         )
 

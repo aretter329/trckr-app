@@ -1,9 +1,12 @@
 from django.contrib import admin
-from coach.models import Program, Tag, Profile
+from coach.models import Program, Tag, User
 
-@admin.register(Profile)
-class ProfileAdmin(admin.ModelAdmin):
-    model = Profile
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    model = User
+    list_display = ('username', 'first_name', 'last_name', 'email', 'date_joined')
+    
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
