@@ -20,6 +20,10 @@ class TagType(DjangoObjectType):
     class Meta:
         model = models.Tag
 
+class ExerciseType(DjangoObjectType):
+    class Meta:
+        model = models.Exercise
+
 class CreateTag(graphene.Mutation):
     tag = graphene.Field(TagType)
 
@@ -48,6 +52,33 @@ class CreateProgram(graphene.Mutation):
         for tag in tags:
             program.tags.add(models.Tag.objects.get(name=tag))
         return CreateProgram(program=program)
+
+class CreateExercise(graphene.Mutation):
+    exercise = graphene.Field(ExerciseType)
+
+    class Arguments:
+        name = graphene.String(required=True)
+        description = graphene.String(required=True)
+        block = graphene.Int(required=True)
+        order_in_block = graphene.Int(required=True)
+        sets = graphene.Int(required=True)
+        reps = graphene.Int(required=True)
+        program = graphene.String(required=True)
+
+    def mutate(self, info, name, description, block, order_in_block, sets, reps, program):
+        program = models.Program.objects.get(slug=program) #check that this makes sense
+        exercise = models.Exercise(
+            name=name,
+            description=description,
+            block=block,
+            order_in_block=order_in_block,
+            sets=sets,
+            #be prepared to switch this to a foreign key for sets & reps if necessary
+            reps=reps,
+            program=program
+        )
+        exercise.save()
+        return CreateExercise(exercise=exercise)
 
 class CreateUser(graphene.Mutation):
     user = graphene.Field(UserType)
@@ -79,6 +110,7 @@ class Mutation(graphene.ObjectType):
     token_auth = ObtainJSONWebToken.Field()
     verify_token = graphql_jwt.Verify.Field()
     refresh_token = graphql_jwt.Refresh.Field()
+    create_exercise = CreateExercise.Field()
 
 class Query(graphene.ObjectType):
     all_programs = graphene.List(ProgramType)

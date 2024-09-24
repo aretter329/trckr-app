@@ -1,5 +1,5 @@
 from django.contrib import admin
-from coach.models import Program, Tag, User
+from coach.models import Program, Tag, User, Exercise
 
 
 @admin.register(User)
@@ -44,3 +44,8 @@ class ProgramAdmin(admin.ModelAdmin):
     }
     date_hierarchy = "date_created"
     save_on_top = True
+
+@admin.register(Exercise)
+class ExerciseAdmin(admin.ModelAdmin):
+    model = Exercise
+    

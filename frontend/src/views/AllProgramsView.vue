@@ -62,17 +62,21 @@ const addTag = async () => {
 </script>
 
 <template>
+  <!--
   <h2>Recent Programs</h2>
   <div v-if="loading">Loading...</div>
   <div v-else-if="error" class="warn">{{ error }}</div>
   <ProgramList v-else :programs="result.allPrograms" />
-  <WriteProgram/>
-  <div>
-    <input v-model="tagName" placeholder="Enter tag name" />
-    <button @click="addTag">Add Tag</button>
-    <p v-if="message">{{ message }}</p>
-  </div>
-
+  
+  
+  
+    <div>
+      <input v-model="tagName" placeholder="Enter tag name" />
+      <button @click="addTag">Add Tag</button>
+      <p v-if="message">{{ message }}</p>
+    </div>
+  -->
+<WriteProgram/>
 
 </template>
 

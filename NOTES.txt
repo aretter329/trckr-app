@@ -1,0 +1,51 @@
+
+
+For the programs the hierarchy should be as follows: 
+
+
+PROGRAM --> DAY(S) --> WORKOUT(S) --> EXERCISE(S)
+
+^each of these is a one to many 
+
+for example: 
+
+program "deload week" could have 3 days 
+
+  day 1: 
+    workouts: 
+      lift 1: 
+        exercises = [...]
+      throw 1: 
+        exercises = [...]
+
+  day 2: 
+    workout: 
+      lift 2: 
+        exercises = [...]
+      throw 2: 
+        exercises = [...]
+
+  day 2: 
+    workout: 
+      lift 3: 
+        exercises = [...]
+      throw 1: 
+        exercises = [...]
+
+
+- these programs should be able to be assigned to users
+^^ handle this later
+
+
+
+FLOW: 
+
+1. 'new program' 
+2. how many days? -- optionally assign to calendar dates 
+3. edit each day 
+    - can choose from existing workout or create new one (can have multiple workouts on one day)
+    - if you choose from existing workout you should be able to slightly modify it 
+
+--> each program can have its own workouts. we would call them something like 
+<name_of_program>-<name_of_workout> 
+deload_3-day_1

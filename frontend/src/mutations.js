@@ -34,3 +34,39 @@ export const USER_SIGNUP = gql`
         }
       }
     }`;
+
+    export const ADD_EXERCISE = gql`
+      mutation (
+        $name: String!
+        $description: String!
+        $block: Int!
+        $order_in_block: Int!
+        $sets: Int!
+        $reps: Int!
+        $program: String!
+      ) {
+        createExercise(
+          name: $name
+          description: $description
+          block: $block
+          orderInBlock: $order_in_block
+          sets: $sets
+          reps: $reps
+          program: $program
+        ) {
+          exercise {
+            id
+            name
+            description
+            block
+            orderInBlock
+            sets
+            reps
+            program {
+              id
+              name
+            }
+          }
+        }
+      }`;
+      
