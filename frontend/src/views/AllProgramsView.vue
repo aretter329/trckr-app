@@ -4,21 +4,39 @@ import { useQuery, useMutation } from "@vue/apollo-composable";
 import gql from "graphql-tag";
 import { ref } from 'vue';
 import WriteProgram from "@/components/WriteProgram.vue";
+import { useUserStore } from "@/store/user";
 
-const { result, loading, error } = useQuery(gql`
-  query {
-    allPrograms {
+const tagName = ref('');
+const message = ref('');
+const writeProgram = ref(false);
+const userStore = useUserStore();
+const username = userStore.getUser.username;
+
+const { result, loading, error } = useQuery(gql` 
+  query{
+    programsByAuthor(username: "${username}") {
       title
       slug
+      dateCreated
+      body
+      tags {
+        name
+      }
       author {
         username
         firstName
         lastName
       }
+  }
+  }`,
+  {
+    variables() {
+      return {
+        username: username
+      };
     }
   }
-`);
-
+);
 
 const CREATE_TAG = gql`
   mutation CreateTag($name: String!){
@@ -31,9 +49,7 @@ const CREATE_TAG = gql`
   }
 `;
 
-// Reactive state
-const tagName = ref('');
-const message = ref('');
+
 
 // Use the mutation
 const createTag = useMutation(CREATE_TAG, {
@@ -62,26 +78,40 @@ const addTag = async () => {
 </script>
 
 <template>
-  <!--
-  <h2>Recent Programs</h2>
+  <div class="container">
+  <h2>Your Programs</h2><div style="width: 100%;">
+  <button @click="writeProgram = !writeProgram">Write a Program</button>
+  <div v-show="writeProgram">
+    <WriteProgram/>
+  </div>
   <div v-if="loading">Loading...</div>
   <div v-else-if="error" class="warn">{{ error }}</div>
-  <ProgramList v-else :programs="result.allPrograms" />
+  
+  <ProgramList v-else 
+      :programs="result.programsByAuthor" 
+      :showAuthor="false"/>
+    </div>
   
   
-  
+   
+    <!--
     <div>
       <input v-model="tagName" placeholder="Enter tag name" />
       <button @click="addTag">Add Tag</button>
       <p v-if="message">{{ message }}</p>
     </div>
-  -->
-<WriteProgram/>
+    -->
 
+  
+
+</div>
 </template>
 
 <style scoped>
-  h2 {
-    color: blue;
+
+  .container{
+    display: flex; 
+    flex-direction: column; 
+    align-items: center;
   }
 </style>

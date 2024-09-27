@@ -19,6 +19,8 @@
   --vt-c-text-light-2: rgba(60, 60, 60, 0.66);
   --vt-c-text-dark-1: var(--vt-c-white);
   --vt-c-text-dark-2: rgba(235, 235, 235, 0.64);
+
+
 }
 
 /* semantic color variables for this project */
@@ -34,8 +36,24 @@
   --color-text: var(--vt-c-text-light-1);
 
   --section-gap: 160px;
-}
 
+  --persian-blue: #072AC8;
+  --dodger-blue: #1e96fc;
+  --uranian-blue: #a2d6f9;
+  --aureolin: #fcf300;
+  --mikado-yellow: #fcc600; 
+  --smoky-black: #0a0903;
+  --flame-orange: #dd6031;
+  --atomic-tangerine: #f79256;
+  --midnight-blue: #372772;
+  --light-green: #8de969;
+
+ 
+
+
+  
+}
+/* 
 @media (prefers-color-scheme: dark) {
   :root {
     --color-background: var(--vt-c-black);
@@ -49,7 +67,7 @@
     --color-text: var(--vt-c-text-dark-2);
   }
 }
-
+*/
 *,
 *::before,
 *::after {

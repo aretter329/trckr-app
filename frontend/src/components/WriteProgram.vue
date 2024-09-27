@@ -10,21 +10,46 @@ const userStore = useUserStore();
 const tags = ref([]);
 const sets = ref([{ weight: '', reps: '' }]);
 const exercises = ref([]);
+const days = ref([]);
 
-const addSet = () => {
-  sets.value.push({ weight: '', reps: '' });
+const addSet = (exercise) => {
+  exercise.sets.push({ weight: '', reps: '' });
 };
 
 const deleteSet = (index) => {
   sets.value.splice(index, 1);
 };
 
-const addExercise = () => {
-  exercises.value.push({ name: '' });
+const addExercise = (workout) => {
+  console.log(workout);
+  workout.exercises.push({ name: '', 
+    sets: [{
+      weight: '',
+      reps: ''
+    }],
+  }
+  );
 };
 
 const deleteExercise = (index) => {
   exercises.value.splice(index, 1);
+};
+
+//add logic to number the days as keys in the days dictionary, etc. 
+const addDay = () => {
+  days.value.push({ name: '', workouts: [] });
+};
+
+const deleteDay = (index) => {
+  days.value.splice(index, 1);
+};
+
+const addWorkout = (day) => {
+  day.workouts.push({ type: 'strength', exercises: [] });
+};
+
+const saveExercise = (workout) => {
+  workout.exercises.push(workout);
 };
 
 const CREATE_PROGRAM = gql`
@@ -74,60 +99,81 @@ const addProgram = async () => {
 <template>
 
   <div class="container">
-    <h2>Write a Program</h2>
-    <form @submit.prevent="addProgram">
+    <form @submit.prevent="">
       <label for="title">Title</label>
       <input type="text" id="title" v-model="title" />
-      <label for="body">Notes</label>
-      <textarea id="body" v-model="body"></textarea>
-    <div class="exercise-container" v-for="exercise, index in exercises" :key="index">
-      <div style="display: flex;">
-        <label for="name" style="padding-right: 10px;">Exercise Name</label>
-        <input type="text" v-model="exercise.name" style="width: 150px;"/>
-        <button class="delete-exercise delete-button" @click="deleteExercise(index)">
+      <div class="days">
+      <div class="day-container" v-for="day, index in days" :key="index">
+        <div style="display: flex;">
+        Day {{ index+1 }}
+        <button class="delete-day delete-button" @click="deleteDay(index)">
           X
         </button>
+        </div>
+
+        <div class="workout-container" v-for="workout, index in day.workouts" :key="index">
+          <label for="workout-type">type</label>
+          <select id="workout-type" v-model="workout.type">
+            <option value="strength">Strength</option>
+            <option value="cardio">Cardio</option>
+          </select>
+          
+          <div class="exercise-container" v-for="exercise, index in workout.exercises" :key="index">
+            <div style="display: flex;">
+              <label for="name" style="padding-right: 10px;">Exercise Name</label>
+              <input type="text" v-model="exercise.name" style="width: 150px;"/>
+              <button class="delete-exercise delete-button" @click="deleteExercise(index)">
+                X
+              </button>
+            </div>
+            
+          
+            <table>
+              <tr>
+                <th>
+                  Set
+                </th>
+                <th v-for="set, index in exercise.sets" :key="index">
+                  {{ index+1 }}
+                </th>
+                <th> 
+                  <button class="add-button" @click="addSet(exercise)">+</button>
+                </th>
+              </tr>
+              <tr>
+                <td>Weight</td>
+                <td v-for="set in exercise.sets" :key="set.index">
+                  <input type="text" v-model="set.weight" />
+                </td>
+              </tr>
+              <tr>
+                <td>Reps</td>
+                <td v-for="set in exercise.sets" :key="set.index">
+                  <input type="text" v-model="set.reps" />
+                </td>
+              </tr>
+              <tr>
+                <td></td>
+                <td v-for="set in exercise.sets" :key="set.index">
+                  <button class="delete-button" @click="deleteSet(set.index)">X</button>
+                </td>
+              </tr>
+            </table>
+          
+          </div>
+          <button class="add-button" @click="addExercise(workout)">add exercise</button>
+
+
+        </div>
+        <button class="add-button" @click="addWorkout(day)">Add Workout</button>
+        
       </div>
-      
-    <table>
-      <tr>
-      <th>
-        Set
-      </th>
-      <th v-for="set, index in sets" :key="index">
-        {{ index+1 }}
-      </th>
-      <th> 
-        <button class="add-button" @click="addSet">+</button>
-      </th>
-      </tr>
-      <tr>
-      <td>Weight</td>
-      
-      <td v-for="set in sets" :key="set.index">
-        <input type="text" v-model="set.weight" />
-      </td>
-      </tr>
-      <tr>
-      <td>Reps</td>
-      
-      <td v-for="set in sets" :key="set.index">
-        <input type="text" v-model="set.reps" />
-      </td>
-      </tr>
-      <tr>
-      <td></td>
-      
-      <td v-for="set in sets" :key="set.index">
-        <button class="delete-button" @click="deleteSet(set.index)">X</button>
-      </td>
-      </tr>
-    </table>
-    </div>
-    <button class="add-button" @click="addExercise()">add exercise</button>
-
-
-    <button type="submit">Submit</button>
+      <button class="add-button" @click="addDay()">Add Day</button>
+      </div>
+      <label for="body">Notes</label>
+      {{ days }}
+      <textarea id="body" v-model="body"></textarea>
+      <button type="submit">submit</button>
     </form>
 
 
@@ -159,6 +205,21 @@ const addProgram = async () => {
     width: 75px;
   }
 
+  .days{
+    display: flex;
+  }
+  .day-container{ 
+    border: 2px solid black; 
+    width: 100%;
+    margin: 10px;
+    background-color: lightblue;
+
+    .delete-button{
+      background-color: transparent;
+      color: black;
+      margin-left: auto;
+    }
+  }
   .exercise-container{
     border: 2px solid black; 
     width: 100%;

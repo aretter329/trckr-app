@@ -140,7 +140,7 @@ class Query(graphene.ObjectType):
         return (
             models.Program.objects.prefetch_related("tags")
             .select_related("author")
-            .filter(author__user__username=username)
+            .filter(author__username=username)
         )
 
     def resolve_programs_by_tag(root, info, tag):

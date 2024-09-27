@@ -4,35 +4,51 @@ import { RouterLink, RouterView } from "vue-router";
 
 <template>
   <header>
-    <div class="wrapper">
-      <h1>My Program</h1>
-      <nav>
-        <RouterLink to="/">Programs</RouterLink>
-      </nav>
-    </div>
+    <nav>
+      <RouterLink to="/">
+        <div class="nav-link">
+          Home
+        </div>
+      </RouterLink>
+      <RouterLink to="/all-programs">
+        <div class="nav-link">
+          Programs
+        </div></RouterLink>
+    </nav>
   </header>
 
-  <RouterView />
+  <body>
+    <RouterView />
+  </body>
+  
+  
+ 
 </template>
 
 <style scoped>
-  h1 {
-    text-align: center;
-    font-weight: bold;
-    margin-bottom: 1rem;
-  }
 
   header {
-    border-bottom: 1px solid #ccc;
-    margin-bottom: 1rem;
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    right: 0;
+    background-color: var(--dodger-blue);
   }
 
   nav {
     text-align: center;
-    margin: 1rem 0;
+    display: flex;
+    justify-content: center;
   }
-
+  
   nav a {
     padding: 0.5rem;
   }
+
+  body{
+    padding-top: 2rem;
+    background-color: rgb(248, 247, 255)
+  }
+
+ 
 </style>
