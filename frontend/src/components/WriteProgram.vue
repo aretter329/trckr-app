@@ -11,6 +11,8 @@ const tags = ref([]);
 const sets = ref([{ weight: '', reps: '' }]);
 const exercises = ref([]);
 const days = ref([]);
+const exercise_states = ref([]);
+const blocks = ['A', 'B', 'C', 'D', 'E', 'F'];
 
 const addSet = (exercise) => {
   exercise.sets.push({ weight: '', reps: '' });
@@ -31,26 +33,36 @@ const addExercise = (workout) => {
   );
 };
 
-const deleteExercise = (index) => {
-  exercises.value.splice(index, 1);
+const expandExercise = (exercise) => {
+  exercise_states.value[exercise] = !exercise_states.value[exercise];
+};
+
+const deleteExercise = (workout, index) => {
+  workout.exercises.splice(index, 1);
 };
 
 //add logic to number the days as keys in the days dictionary, etc. 
 const addDay = () => {
-  days.value.push({ name: '', workouts: [] });
+  const day_number = days.value.length + 1;
+  days.value.push({ number: day_number, workouts: [] });
 };
 
-const deleteDay = (index) => {
-  days.value.splice(index, 1);
+const deleteDay = (number) => {
+  const dayIndex = days.value.findIndex(day => day.number === number);
+  if (dayIndex !== -1) {
+    days.value.splice(dayIndex, 1);
+  }
+  //need to fix bug here for numbering days after deleting an earlier day
 };
 
 const addWorkout = (day) => {
-  day.workouts.push({ type: 'strength', exercises: [] });
+  day.workouts.push({ type: 'strength', exercises: [], blocks: [] });
 };
 
 const saveExercise = (workout) => {
   workout.exercises.push(workout);
 };
+
 
 const CREATE_PROGRAM = gql`
   mutation CreateProgram($title: String!, $body: String!, $slug: String!, $author: String!, $tags: [String!]) {
@@ -94,85 +106,77 @@ const addProgram = async () => {
   console.log(response);
 };
 
+
 </script>
 
 <template>
 
   <div class="container">
     <form @submit.prevent="">
-      <label for="title">Title</label>
-      <input type="text" id="title" v-model="title" />
+      <input type="text" id="title" v-model="title" placeholder="Program Name" style="width: 300px"/>
       <div class="days">
       <div class="day-container" v-for="day, index in days" :key="index">
-        <div style="display: flex;">
-        Day {{ index+1 }}
-        <button class="delete-day delete-button" @click="deleteDay(index)">
-          X
-        </button>
-        </div>
-
-        <div class="workout-container" v-for="workout, index in day.workouts" :key="index">
-          <label for="workout-type">type</label>
-          <select id="workout-type" v-model="workout.type">
+          Day {{ day.number }}
+        <div class="workout-container" v-for="(workout, index) in day.workouts" :key="index" :class="workout.type">
+            <select id="workout-type" v-model="workout.type" style="width: 100px;">
             <option value="strength">Strength</option>
             <option value="cardio">Cardio</option>
           </select>
           
-          <div class="exercise-container" v-for="exercise, index in workout.exercises" :key="index">
-            <div style="display: flex;">
-              <label for="name" style="padding-right: 10px;">Exercise Name</label>
-              <input type="text" v-model="exercise.name" style="width: 150px;"/>
-              <button class="delete-exercise delete-button" @click="deleteExercise(index)">
+            <div class="exercise-container" v-for="exercise, index in workout.exercises" :key="index" :class="`block${exercise.block}`">            
+            <div v-if="exercise_states[index]" style="display: flex;">
+                <p style="margin-left: 20px;">
+                  {{ exercise.name }} 
+                  <button class="edit-button" @click="expandExercise(index)">edit</button>
+                </p>
+                
+                <button class="delete-exercise delete-button" @click="deleteExercise(workout, index)">
                 X
               </button>
             </div>
-            
+            <div v-else>
+              <input type="text" v-model="exercise.name" placeholder="Exercise Name" style="width: 150px;"/>
+                <select v-model="exercise.block">
+                  <option v-for="block in blocks" :value="block">{{ block }}</option>
+                </select>
+              <button class="delete-exercise delete-button" @click="deleteExercise(workout, index)">
+                X
+              </button>
           
             <table>
               <tr>
-                <th>
-                  Set
-                </th>
-                <th v-for="set, index in exercise.sets" :key="index">
-                  {{ index+1 }}
-                </th>
-                <th> 
-                  <button class="add-button" @click="addSet(exercise)">+</button>
-                </th>
-              </tr>
-              <tr>
-                <td>Weight</td>
+                
                 <td v-for="set in exercise.sets" :key="set.index">
-                  <input type="text" v-model="set.weight" />
+                  <input type="number" v-model="set.weight" step="1" placeholder="weight"/>
+                </td>
+                <button @click="addSet(exercise)">+</button>
+              </tr>
+              
+              <tr>
+                <td v-for="set in exercise.sets" :key="set.index">
+                  <input type="number" v-model="set.reps" step="1" placeholder="reps"/>
                 </td>
               </tr>
               <tr>
-                <td>Reps</td>
-                <td v-for="set in exercise.sets" :key="set.index">
-                  <input type="text" v-model="set.reps" />
-                </td>
-              </tr>
-              <tr>
-                <td></td>
                 <td v-for="set in exercise.sets" :key="set.index">
                   <button class="delete-button" @click="deleteSet(set.index)">X</button>
                 </td>
               </tr>
             </table>
+            <button @click="expandExercise(index)">done</button>
+          </div>
           
           </div>
-          <button class="add-button" @click="addExercise(workout)">add exercise</button>
+          <button @click="addExercise(workout)">add exercise</button>
 
 
         </div>
-        <button class="add-button" @click="addWorkout(day)">Add Workout</button>
-        
+        <button style="width: 100px;" @click="addWorkout(day)">Add Workout</button>
       </div>
-      <button class="add-button" @click="addDay()">Add Day</button>
-      </div>
-      <label for="body">Notes</label>
+      <button style="height: 50px;" @click="addDay(index)">Add Day</button>
+      </div> 
       {{ days }}
-      <textarea id="body" v-model="body"></textarea>
+      <textarea id="body" v-model="body" placeholder="Notes"></textarea>
       <button type="submit">submit</button>
     </form>
 
@@ -195,10 +199,10 @@ const addProgram = async () => {
   button {
     margin-top: 1rem;
     padding: 0.5rem;
+    border-radius: 4px;
   }
   button:hover {
     cursor: pointer;
-    transform: translate(2px, 2px);
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
   }
   td{
@@ -207,12 +211,19 @@ const addProgram = async () => {
 
   .days{
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
   }
   .day-container{ 
-    border: 2px solid black; 
-    width: 100%;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    background-color:#f7f5f5b2;
+    border-radius: 5px;
+    width: 400px;
     margin: 10px;
-    background-color: lightblue;
+    display: flex; 
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
 
     .delete-button{
       background-color: transparent;
@@ -222,31 +233,59 @@ const addProgram = async () => {
   }
   .exercise-container{
     border: 2px solid black; 
-    width: 100%;
     margin: 10px;
-    background-color: pink;
+    background-color: white;
   }
 
+  .workout-container{
+    background: lightgray;
+    display: flex;
+    flex-direction: column;
+    margin: 5px;
+    width: 95%;
+  }
+
+  .blockA{
+    border: 3px solid var(--dodger-blue);
+  }
+
+  .blockB{
+    border: 3px solid var(--flame-orange);
+  }
+
+  .blockC{
+    border: 3px solid var(--lime-green);
+  }
+
+  .blockD{
+    border: 3px solid var(--persian-blue);
+  }
+
+  .blockE{
+    border: 3px solid var(--smoky-black);
+  }
+
+  .blockF{
+    border: 3px solid var(--uranian-blue);
+  }
+
+  .cardio{
+    background-color: lightyellow;
+  }
+
+  .strength{ 
+    background-color: lightblue;
+  }
+ 
   *{
     background-color: transparent;
     color: black;
   }
 
+
   .container{
     background-color: white;
     padding: 30px;
-  }
-
-  button{ 
-    border-radius: 4px;
-  }
-
-  .add-button{
-    background-color: green;
-    color: white;
-    border: none;
-    padding: 10px;
-    margin: 10px;
   }
 
   .delete-button{
@@ -261,4 +300,16 @@ const addProgram = async () => {
     margin-left: auto;
   }
 
+  .edit-button{
+    border: none;
+    padding: none; 
+    margin-left: 20px; 
+  }
+
+  form{
+    display: flex; 
+    flex-direction: column;
+    align-items: center;
+    
+  }
 </style>
