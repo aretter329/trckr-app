@@ -3,19 +3,23 @@ import { ref } from 'vue';
 import { useQuery, useMutation } from "@vue/apollo-composable";
 import gql from "graphql-tag";
 import { useUserStore } from "@/store/user";
+import { ADD_PROGRAM, ADD_DAY, ADD_WORKOUT, ADD_EXERCISE, ADD_SET } from '@/mutations';
 
 const title = ref('');
-const body = ref('');
+const notes = ref('');
 const userStore = useUserStore();
 const tags = ref([]);
 const sets = ref([{ weight: '', reps: '' }]);
 const exercises = ref([]);
 const days = ref([]);
 const exercise_states = ref([]);
-const blocks = ['A', 'B', 'C', 'D', 'E', 'F'];
+const day_states = ref([]);
+const blocks = [1,2,3,4,5,6];
+const program_id = ref();
 
 const addSet = (exercise) => {
-  exercise.sets.push({ weight: '', reps: '' });
+  let order = exercise.sets.length + 1;
+  exercise.sets.push({ order: order, weight: '', reps: '' });
 };
 
 const deleteSet = (index) => {
@@ -23,9 +27,9 @@ const deleteSet = (index) => {
 };
 
 const addExercise = (workout) => {
-  console.log(workout);
   workout.exercises.push({ name: '', 
     sets: [{
+      order: 1,
       weight: '',
       reps: ''
     }],
@@ -33,8 +37,23 @@ const addExercise = (workout) => {
   );
 };
 
+const mutateProgram = () => {
+  let program = {
+    title: title.value,
+    notes: notes.value,
+    days: days.value,
+  };
+  console.log(program);
+
+  return program;
+};
+
 const expandExercise = (exercise) => {
   exercise_states.value[exercise] = !exercise_states.value[exercise];
+};
+
+const expandDay = (day) => {
+  day_states.value[day] = !day_states.value[day];
 };
 
 const deleteExercise = (workout, index) => {
@@ -44,7 +63,7 @@ const deleteExercise = (workout, index) => {
 //add logic to number the days as keys in the days dictionary, etc. 
 const addDay = () => {
   const day_number = days.value.length + 1;
-  days.value.push({ number: day_number, workouts: [] });
+  days.value.push({ name: '', number: day_number, workouts: [] });
 };
 
 const deleteDay = (number) => {
@@ -56,32 +75,19 @@ const deleteDay = (number) => {
 };
 
 const addWorkout = (day) => {
-  day.workouts.push({ type: 'strength', exercises: [], blocks: [] });
+  let order = day.workouts.length + 1;
+  day.workouts.push({ type: 'strength', order: order, exercises: [], blocks: [] });
 };
 
 const saveExercise = (workout) => {
   workout.exercises.push(workout);
 };
 
-
-const CREATE_PROGRAM = gql`
-  mutation CreateProgram($title: String!, $body: String!, $slug: String!, $author: String!, $tags: [String!]) {
-    createProgram(title: $title, body: $body, slug: $slug, author: $author, tags: $tags) {
-      program {
-        id
-        title
-        body
-        slug
-      }
-    }
-  }
-`;
-
-const createProgram = useMutation(CREATE_PROGRAM, {
+const createProgram = useMutation(ADD_PROGRAM, {
   variables() {
     return {
       title: title.value,
-      body: body.value,
+      notes: notes.value,
       slug: title.value.toLowerCase().replace(/\s+/g, '-'),
       author: userStore.getUser.username,
       tags: tags.value
@@ -93,18 +99,140 @@ const addProgram = async () => {
   try {
     const response = await createProgram.mutate({
       title: title.value,
-      body: body.value,
+      notes: notes.value,
       slug: title.value.toLowerCase().replace(/\s+/g, '-'),
       author: userStore.getUser.username, // Get the current user
       tags: tags.value
     });
+
+    program_id.value = response.data.createProgram.program.id;
+    console.log(program_id.value);
+    addDays();
+    /*
     title.value = '';
-    body.value = '';
+    notes.value = ''; */
   } catch (error) {
     console.error(error);
   }
-  console.log(response);
 };
+
+const makeDay = async (day) => {
+  try {
+    const response = await createDay.mutate({
+      name: day.name,
+      programId: program_id.value,
+      orderInProgram: day.number
+
+    });
+    let day_id = response.data.createDay.day.id;
+    for (let workout of day.workouts) {
+      makeWorkout(workout, day_id);
+    }
+    
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const addDays = () => {
+  days.value.forEach(day => {
+    makeDay(day);
+  });
+};
+
+const createDay = useMutation(ADD_DAY, {
+  variables() {
+    return {
+      name: '',
+      program: program_id.value,
+      orderInProgram: ''
+    };
+  }
+});
+
+const makeWorkout = async (workout, day_id) => {
+  try {
+    const response = await createWorkout.mutate({
+      type: workout.type,
+      dayId: day_id,
+      orderInDay: workout.order
+    });
+    
+    let workout_id = response.data.createWorkout.workout.id;
+    for (let exercise of workout.exercises) {
+      makeExercise(exercise, workout_id);
+    }
+    
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const createWorkout = useMutation(ADD_WORKOUT, {
+  variables() {
+    return {
+      type: '',
+      dayId: '',
+      orderInDay: ''
+    };
+  }
+});
+
+const makeExercise = async (exercise, workout_id) => {
+  try {
+    const response = await createExercise.mutate({
+      name: exercise.name,
+      workoutId: workout_id,
+      block: exercise.block,
+      description: exercise.description,
+      orderInBlock: exercise.order
+    });
+    let exercise_id = response.data.createExercise.exercise.id;
+    for (let set of exercise.sets) {
+      makeSet(set, exercise_id);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const createExercise = useMutation(ADD_EXERCISE, {
+  variables() {
+    return {
+      name: '',
+      workoutId: '',
+      block: '',
+      description: '',
+      orderInBlock: ''
+    };
+  }
+});
+
+const makeSet = async (set, exercise_id) => {
+  try {
+    const response = await createSet.mutate({
+      weight: set.weight,
+      reps: set.reps,
+      exerciseId: exercise_id,
+      number: set.order
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const createSet = useMutation(ADD_SET, {
+  variables() {
+    return {
+      weight: '',
+      reps: '',
+      exerciseId: '',
+      number: ''
+    };
+  }
+});
+
+
 
 
 </script>
@@ -112,11 +240,18 @@ const addProgram = async () => {
 <template>
 
   <div class="container">
-    <form @submit.prevent="">
       <input type="text" id="title" v-model="title" placeholder="Program Name" style="width: 300px"/>
       <div class="days">
       <div class="day-container" v-for="day, index in days" :key="index">
-          Day {{ day.number }}
+        <div v-if="!day_states[index]" style="display: flex;">
+          {{ day.name }}
+          <button class="edit-button" @click="expandDay(index)">edit</button>
+        </div>
+        <div v-else>
+          <input type="text" v-model="day.name" placeholder="Day Name" style="width: 150px;"/>
+          <button class="delete-button" @click="deleteDay(day.number)">
+            X
+          </button>
         <div class="workout-container" v-for="(workout, index) in day.workouts" :key="index" :class="workout.type">
             <select id="workout-type" v-model="workout.type" style="width: 100px;">
             <option value="strength">Strength</option>
@@ -136,8 +271,12 @@ const addProgram = async () => {
             </div>
             <div v-else>
               <input type="text" v-model="exercise.name" placeholder="Exercise Name" style="width: 150px;"/>
-                <select v-model="exercise.block">
+              <input type="text" v-model="exercise.description" placeholder="Description" style="width: 150px;"/> 
+              <select v-model="exercise.block">
                   <option v-for="block in blocks" :value="block">{{ block }}</option>
+              </select>
+                <select v-model="exercise.order">
+                  <option v-for="i in 2" :value="i">{{ i }}</option>
                 </select>
               <button class="delete-exercise delete-button" @click="deleteExercise(workout, index)">
                 X
@@ -149,6 +288,7 @@ const addProgram = async () => {
                 <td v-for="set in exercise.sets" :key="set.index">
                   <input type="number" v-model="set.weight" step="1" placeholder="weight"/>
                 </td>
+                
                 <button @click="addSet(exercise)">+</button>
               </tr>
               
@@ -168,17 +308,17 @@ const addProgram = async () => {
           
           </div>
           <button @click="addExercise(workout)">add exercise</button>
-
-
         </div>
         <button style="width: 100px;" @click="addWorkout(day)">Add Workout</button>
+        <button @click="expandDay(index)">done</button>
+      </div>
+     
       </div>
       <button style="height: 50px;" @click="addDay(index)">Add Day</button>
       </div> 
       {{ days }}
-      <textarea id="body" v-model="body" placeholder="Notes"></textarea>
-      <button type="submit">submit</button>
-    </form>
+      <textarea id="notes" v-model="notes" placeholder="Notes"></textarea>
+      <button type="submit" @click="addProgram()">submit</button>
 
 
   </div>

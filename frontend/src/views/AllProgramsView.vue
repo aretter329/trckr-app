@@ -18,7 +18,7 @@ const { result, loading, error } = useQuery(gql`
       title
       slug
       dateCreated
-      body
+      notes
       tags {
         name
       }

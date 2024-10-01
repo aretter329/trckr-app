@@ -1,5 +1,5 @@
 from django.contrib import admin
-from coach.models import Program, Tag, User, Exercise
+from coach.models import Program, Tag, User, Exercise, Workout, Day, Set
 
 
 @admin.register(User)
@@ -15,6 +15,8 @@ class TagAdmin(admin.ModelAdmin):
 @admin.register(Program)
 class ProgramAdmin(admin.ModelAdmin):
     model = Program
+
+
 
     list_display = (
         "id",
@@ -49,3 +51,14 @@ class ProgramAdmin(admin.ModelAdmin):
 class ExerciseAdmin(admin.ModelAdmin):
     model = Exercise
     
+@admin.register(Workout)
+class WorkoutAdmin(admin.ModelAdmin):
+    model = Workout
+
+@admin.register(Day)
+class DayAdmin(admin.ModelAdmin):
+    model = Day
+    
+@admin.register(Set)
+class SetAdmin(admin.ModelAdmin):
+    model = Set
