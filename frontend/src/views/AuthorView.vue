@@ -1,6 +1,5 @@
 <script setup>
 import ProgramList from "../components/ProgramList.vue";
-
 import { useRoute } from "vue-router";
 import { useQuery } from "@vue/apollo-composable";
 import gql from "graphql-tag";

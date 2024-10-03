@@ -1,8 +1,10 @@
 <script setup>
 import AuthorLink from "./AuthorLink.vue";
-import { RouterLink } from "vue-router";
 import { defineProps, ref } from "vue";
 import ProgramDaysBoxes from "./ProgramDaysBoxes.vue";
+import { GET_DAYS_BY_PROGRAM } from "@/queries";
+import { useQuery } from "@vue/apollo-composable";
+import gql from "graphql-tag";
 
 const props = defineProps({
   programs: {
@@ -16,6 +18,28 @@ const props = defineProps({
   },
 });
 
+/*let result, loading, error;
+
+function fetchData(programId) {
+  const { result: res, loading: load, error: err } = useQuery(GET_DAYS_BY_PROGRAM, {
+    variables() {
+      return {
+        programId: programId,
+      };
+    },
+  });
+
+  result = res;
+  loading = load;
+  error = err;
+
+  console.log(result);
+} */
+
+
+ 
+
+/*
 const days = {
   0: {
     name: "Day 1",
@@ -104,7 +128,7 @@ const days = {
     ],
   },
 };
-
+*/
 
 const collapsedPrograms = ref([]);
 function formatDate(originalDate) {
@@ -129,9 +153,10 @@ function isCollapsed(slug) {
     return collapsedPrograms.value.includes(slug);
 };
 
-function toggleCollapse(slug) {
+function toggleCollapse(slug, id) {
     if (isCollapsed(slug)) {
         collapsedPrograms.value = collapsedPrograms.value.filter(s => s !== slug);
+
     } else {
         collapsedPrograms.value.push(slug);
     }
@@ -142,7 +167,7 @@ function toggleCollapse(slug) {
 <template>
   <div>
     <div v-for="program in props.programs" :key="program.slug" class="program">
-      <div class="program-row" @click="toggleCollapse(program.slug)">
+      <div class="program-row" @click="toggleCollapse(program.slug, program.id)">
         <div class="program-title">
           {{ program.title }}
         </div>
@@ -157,7 +182,7 @@ function toggleCollapse(slug) {
         </div>
       </div>
       <div v-if="isCollapsed(program.slug)" class="program-details">
-        <ProgramDaysBoxes :days="days" />
+        <ProgramDaysBoxes :program_id="program.id"/>
         Notes: {{ program.body }}
       </div>
     </div>

@@ -188,6 +188,11 @@ class Query(graphene.ObjectType):
     workouts_by_day = graphene.List(WorkoutType, day_id=graphene.ID())
     exercises_by_workout = graphene.List(ExerciseType, workout_id=graphene.ID())
     sets_by_exercise = graphene.List(SetType, exercise_id=graphene.ID())
+    program_days = graphene.List(DayType, program_id=graphene.ID())
+
+    def resolve_program_days(root, info, program_id):
+        program = models.Program.objects.get(id=program_id)
+        return program.days.prefetch_related("workouts__exercises__sets")
 
     def resolve_sets_by_exercise(root, info, exercise_id):
         return models.Set.objects.filter(exercise_id=exercise_id)
