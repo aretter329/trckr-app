@@ -2,9 +2,8 @@
 import AuthorLink from "./AuthorLink.vue";
 import { defineProps, ref } from "vue";
 import ProgramDaysBoxes from "./ProgramDaysBoxes.vue";
-import { GET_DAYS_BY_PROGRAM } from "@/queries";
-import { useQuery } from "@vue/apollo-composable";
-import gql from "graphql-tag";
+import { useMutation } from "@vue/apollo-composable";
+import { ASSIGN_PROGRAM } from "@/mutations";
 
 const props = defineProps({
   programs: {
@@ -16,119 +15,12 @@ const props = defineProps({
     required: false,
     default: true,
   },
+  allowAssignment: {
+    type: Boolean,
+    required: false,
+    default: true,
+  },
 });
-
-/*let result, loading, error;
-
-function fetchData(programId) {
-  const { result: res, loading: load, error: err } = useQuery(GET_DAYS_BY_PROGRAM, {
-    variables() {
-      return {
-        programId: programId,
-      };
-    },
-  });
-
-  result = res;
-  loading = load;
-  error = err;
-
-  console.log(result);
-} */
-
-
- 
-
-/*
-const days = {
-  0: {
-    name: "Day 1",
-    //workouts will be based on type? 
-    workouts: [
-      {
-        title: "Workout 1",
-        type: {
-          color: "--atomic-tangerine",
-          name: "Lift",
-        },
-        exercises: [
-          {
-            title: "Squats",
-            sets: 3,
-            reps: 10,
-          },
-          {
-            title: "Bench Press",
-            sets: 3,
-            reps: 10,
-          },
-        ],
-      },
-      {
-        title: "Workout 2",
-        type: {
-          color: "--uranian-blue",
-          name: "Plyos",
-        },
-        exercises: [
-          {
-            title: "Jump Squats",
-            sets: 3,
-            reps: 10,
-          },
-          {
-            title: "Box Jumps",
-            sets: 3,
-            reps: 10,
-          },
-        ],
-      },
-    ],
-  },
-  1: {name: "Day 2",
-    workouts: [
-      {
-        title: "Workout 1",
-        type: {
-          color: "--atomic-tangerine",
-          name: "Lift",
-        },
-        exercises: [
-          {
-            title: "Squats",
-            sets: 3,
-            reps: 10,
-          },
-          {
-            title: "Bench Press",
-            sets: 3,
-            reps: 10,
-          },
-        ],
-      },
-      {
-        title: "Workout 2",
-        type: {
-          color: "--uranian-blue",
-          name: "Plyos",
-        },
-        exercises: [
-          {
-            title: "Jump Squats",
-            sets: 3,
-            reps: 10,
-          },
-          {
-            title: "Box Jumps",
-            sets: 3,
-            reps: 10,
-          },
-        ],
-      },
-    ],
-  },
-};
-*/
 
 const collapsedPrograms = ref([]);
 function formatDate(originalDate) {
@@ -162,21 +54,49 @@ function toggleCollapse(slug, id) {
     }
 };
 
+
+const assignToAthlete = async (program_id, athlete) => {
+  try {
+    const response = await assignProgramMutation.mutate({
+      programId: program_id,
+      athleteUsername: athlete
+    });
+    console.log(response);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+const assignProgramMutation = useMutation(ASSIGN_PROGRAM, {
+  variables(){
+    return {
+      programId: '',
+      athleteUsername: ''
+    }
+  }
+})
 </script>
 
 <template>
   <div>
     <div v-for="program in props.programs" :key="program.slug" class="program">
-      <div class="program-row" @click="toggleCollapse(program.slug, program.id)">
+      <div class="program-row">
         <div class="program-title">
           {{ program.title }}
         </div>
         <div class="program-tags">
           {{ program.tags.map(tag => tag.name).join(', ') }}
         </div>
+
+        <button v-show="allowAssignment" @click="assignToAthlete(program.id, 'athlete1')">Assign Program</button>
         <div class="program-date">
           {{ formatDate(program.dateCreated) }}
         </div>
+
+        <button @click="toggleCollapse(program.slug, program.id)">
+          {{ !isCollapsed(program.slug) ? 'Show Details' : 'Hide Details' }}
+        </button>
+
         <div v-if="showAuthor" class="program-author">
           <AuthorLink :author="program.author" />
         </div>

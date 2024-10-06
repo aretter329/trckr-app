@@ -3,8 +3,12 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
+    is_athlete = models.BooleanField(default=True)
+    is_coach = models.BooleanField(default=False)
+    coach = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='athletes')
+    
     def __str__(self):
-        return self.username  
+        return self.username
 
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -21,6 +25,7 @@ class Program(models.Model):
   published = models.BooleanField(default=False)
   author = models.ForeignKey(User, on_delete=models.PROTECT)
   tags = models.ManyToManyField(Tag, blank=True)
+  assigned_athletes = models.ManyToManyField(User, related_name='assigned_programs', blank=True)
 
   class Meta:
       ordering = ["-date_created"]

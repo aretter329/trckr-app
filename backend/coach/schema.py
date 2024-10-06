@@ -56,14 +56,16 @@ class CreateProgram(graphene.Mutation):
         author = graphene.String(required=True)
         tags = graphene.List(graphene.String)
         slug = graphene.String(required=True)
+        assigned_athletes = graphene.List(graphene.String)
 
-    def mutate(self, info, title, notes, author, tags, slug):
+    def mutate(self, info, title, notes, author, tags, slug, assigned_athletes):
         author = models.User.objects.get(username=author)
-        program = models.Program(title=title, notes=notes, author=author, slug=slug)
+        program = models.Program(title=title, notes=notes, author=author, slug=slug, assigned_athletes=assigned_athletes)
         program.save()
         for tag in tags:
             program.tags.add(models.Tag.objects.get(name=tag))
         return CreateProgram(program=program)
+
     
 class CreateDay(graphene.Mutation):
     day = graphene.Field(DayType)
@@ -108,7 +110,7 @@ class CreateExercise(graphene.Mutation):
         name = graphene.String(required=True)
         description = graphene.String(required=True)
         block = graphene.Int(required=True)
-        order_in_block = graphene.Int(required=True)
+        order_in_block = graphene.Int(required=False)
         workout_id = graphene.ID(required=True)  # Modified argument
 
     def mutate(self, info, name, description, block, order_in_block, workout_id):  # Modified argument
@@ -150,21 +152,58 @@ class CreateUser(graphene.Mutation):
         username = graphene.String(required=True)
         email = graphene.String(required=True)
         password = graphene.String(required=True)
+        is_athlete = graphene.Boolean(required=True)
+        is_coach = graphene.Boolean(required=True)
+        coach = graphene.String(required=False)  
 
-    def mutate(self, info, username, email, password):
+    def mutate(self, info, username, email, password, is_coach, is_athlete, coach=None):  
         user = models.User(
             username=username, 
-            email=email
+            email=email,
+            is_coach=is_coach,
+            is_athlete=is_athlete
         )
         user.set_password(password)
+        if coach:
+            coach_user = models.User.objects.get(username=coach)
+            user.coach = coach_user
         user.save()
         return CreateUser(user=user)
+    
 class ObtainJSONWebToken(graphql_jwt.JSONWebTokenMutation):
     user = graphene.Field(UserType)
 
     @classmethod
     def resolve(cls, root, info, **kwargs):
         return cls(user=info.context.user)
+    
+class AddAthlete(graphene.Mutation):
+    user = graphene.Field(UserType)
+
+    class Arguments:
+        athlete_username = graphene.String(required=True)
+        coach_username = graphene.String(required=True)
+
+    def mutate(self, info, athlete_username, coach_username):
+        athlete = models.User.objects.get(username=athlete_username)
+        coach = models.User.objects.get(username=coach_username)
+        athlete.coach = coach
+        athlete.save()
+        return AddAthlete(user=athlete)
+    
+class AssignProgram(graphene.Mutation):
+    program = graphene.Field(ProgramType)
+
+    class Arguments:
+        program_id = graphene.ID(required=True)
+        athlete_username = graphene.String(required=True)
+
+    def mutate(self, info, program_id, athlete_username):
+        program = models.Program.objects.get(id=program_id)
+        athlete = models.User.objects.get(username=athlete_username)
+        program.assigned_athletes.add(athlete)
+        program.save()
+        return AssignProgram(program=program)
     
 class Mutation(graphene.ObjectType):
     create_tag = CreateTag.Field()
@@ -177,6 +216,8 @@ class Mutation(graphene.ObjectType):
     create_day = CreateDay.Field()
     create_workout = CreateWorkout.Field()
     create_set = CreateSet.Field()
+    add_athlete = AddAthlete.Field()
+    assign_program = AssignProgram.Field()
 
 class Query(graphene.ObjectType):
     all_programs = graphene.List(ProgramType)
@@ -189,6 +230,8 @@ class Query(graphene.ObjectType):
     exercises_by_workout = graphene.List(ExerciseType, workout_id=graphene.ID())
     sets_by_exercise = graphene.List(SetType, exercise_id=graphene.ID())
     program_days = graphene.List(DayType, program_id=graphene.ID())
+    all_athletes_by_coach = graphene.List(UserType, coach_username=graphene.String())
+    programs_by_athlete = graphene.List(ProgramType, athlete_username=graphene.String())
 
     def resolve_program_days(root, info, program_id):
         program = models.Program.objects.get(id=program_id)
@@ -236,6 +279,14 @@ class Query(graphene.ObjectType):
             .select_related("author")
             .filter(tags__name__iexact=tag)
         )
+    
+    def resolve_all_athletes_by_coach(root, info, coach_username):
+        coach = models.User.objects.get(username=coach_username)
+        return models.User.objects.filter(coach=coach)
+    
+    def resolve_programs_by_athlete(root, info, athlete_username):
+        athlete = models.User.objects.get(username=athlete_username)
+        return models.Program.objects.filter(assigned_athletes=athlete)
 
     
 schema = graphene.Schema(query=Query, mutation=Mutation)

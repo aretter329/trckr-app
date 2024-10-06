@@ -13,7 +13,14 @@ import { RouterLink, RouterView } from "vue-router";
       <RouterLink to="/all-programs">
         <div class="nav-link">
           Programs
-        </div></RouterLink>
+        </div>
+      </RouterLink>
+      <RouterLink to="/athletes">
+        <div class="nav-link">
+          Athletes
+        </div>
+      </RouterLink>
+
     </nav>
   </header>
 

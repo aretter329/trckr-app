@@ -12,7 +12,7 @@ const writeProgram = ref(false);
 const userStore = useUserStore();
 const username = userStore.getUser.username;
 
-const { result, loading, error } = useQuery(gql` 
+const { result: authoredPrograms, loading, error } = useQuery(gql` 
   query{
     programsByAuthor(username: "${username}") {
       title
@@ -50,6 +50,33 @@ const CREATE_TAG = gql`
   }
 `;
 
+const { result: assignedPrograms, loading1, error1 } = useQuery(gql` 
+  query{
+    programsByAthlete(athleteUsername: "${username}") {
+      title
+      slug
+      dateCreated
+      notes
+      id
+      tags {
+        name
+      }
+      author {
+        username
+        firstName
+        lastName
+      }
+    }
+  }`,
+  {
+    variables() {
+      return {
+        athleteUsername: username
+      };
+    }
+  }
+);
+
 
 
 // Use the mutation
@@ -80,32 +107,33 @@ const addTag = async () => {
 
 <template>
   <div class="container">
-  <h2>Your Programs</h2><div style="width: 100%;">
-  <button @click="writeProgram = !writeProgram">Write a Program</button>
-  <div v-show="writeProgram">
-    <WriteProgram/>
+    <div style="width: 80%; display: flex; flex-direction: column; align-items: center;">
+      <button @click="writeProgram = !writeProgram">Write a Program</button>
+      <div v-show="writeProgram" style="width: 100%">
+        <WriteProgram/>
+      </div>
+      
+      <h2> Your Programs </h2>
+      <div v-if="loading">Loading...</div>
+      <div v-else-if="error" class="warn">{{ error }}</div>
+      <div v-else-if="authoredPrograms" style="width: 100%">
+      <ProgramList 
+        :programs="authoredPrograms.programsByAuthor" 
+        :showAuthor="false"
+        :allowAssignment="true"/>
+      </div>
+
+      <h2> Assigned to you </h2>
+      <div v-if="loading1">Loading...</div>
+      <div v-else-if="error1" class="warn">{{ error }}</div>
+      <div v-else-if="assignedPrograms" style="width: 100%">
+      <ProgramList 
+        :programs="assignedPrograms.programsByAthlete" 
+        :showAuthor="false"
+        :allowAssignment="false"/>
+      </div>
+    </div>
   </div>
-  <div v-if="loading">Loading...</div>
-  <div v-else-if="error" class="warn">{{ error }}</div>
-  
-  <ProgramList v-else 
-      :programs="result.programsByAuthor" 
-      :showAuthor="false"/>
-    </div>
-  
-  
-   
-    <!--
-    <div>
-      <input v-model="tagName" placeholder="Enter tag name" />
-      <button @click="addTag">Add Tag</button>
-      <p v-if="message">{{ message }}</p>
-    </div>
-    -->
-
-  
-
-</div>
 </template>
 
 <style scoped>

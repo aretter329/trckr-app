@@ -35,29 +35,20 @@ const { result, loading, error } = useQuery(gql`
   }
 }
 `);
-
-
 </script>
 
 <template> 
-  
   <div v-if="result && result.programDays">
     <div class="program-days-boxes">
       <div v-for="day in result.programDays" :key="day.id" class="program-day-box">
         <div class="day-name">{{ day.name }}</div> 
-          <div v-for="workout in day.workouts" :key="workout.id" class="workout-box">
+          <div v-for="workout in day.workouts" :key="workout.id" class="workout-box" :class="workout.type">
             <div class="workout-type">
               {{ workout.type }}
               <div v-for="exercise in workout.exercises" :key="exercise.id" class="exercise-box">
                 {{ exercise.name }} <br/>
-                block: {{ exercise.block }}  <br/>
-                order in block: {{ exercise.orderInBlock }} </br>
                 <div class="set-list">
-                  <div v-for="set in exercise.sets" :key="set.id" class="set-box">
-                    {{ set.reps }} reps <br/>
-                    {{ set.weight }} lbs <br/>
-                    number {{ set.number }} <br/>
-                  </div>
+                  {{ exercise.sets.map(set => `${set.reps} @ ${set.weight}`).join(', ') }}
                 </div>
               </div>
           </div>
@@ -88,8 +79,21 @@ const { result, loading, error } = useQuery(gql`
   padding: 10px;
   border: 1px solid gray;
 }
+
 .day-name{
   display: flex; 
   justify-content: center;
 }
+
+.exercise-box{
+  margin: 5px;}
+
+.strength{
+  background-color: var(--strength-color);
+}
+
+.cardio{
+  background-color: var(--cardio-color);
+}
+
 </style> 

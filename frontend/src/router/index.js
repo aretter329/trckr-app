@@ -6,6 +6,7 @@ import ProgramsByTagView from "../views/ProgramsByTagView.vue";
 import LoginView from "../views/LoginView.vue";
 import RegisterView from "../views/RegisterView.vue";
 import HomeView from "../views/HomeView.vue";
+import AthletesView from "../views/AthletesView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,6 +20,11 @@ const router = createRouter({
       path: "/all-programs",
       name: "programs",
       component: AllProgramsView,
+    },
+    {
+      path: "/athletes",
+      name: "athletes",
+      component: AthletesView,
     },
     {
       path: "/author/:username",

@@ -5,11 +5,15 @@ export const USER_SIGNUP = gql`
     $username: String!
     $email: String!
     $password: String!
+    $isAthlete: Boolean!
+    $isCoach: Boolean!
   ) {
     createUser(
       username: $username
       email: $email
       password: $password
+      isAthlete: $isAthlete
+      isCoach: $isCoach
     ) {
       user {
         id
@@ -114,14 +118,12 @@ export const USER_SIGNUP = gql`
         $name: String!
         $description: String!
         $block: Int!
-        $orderInBlock: Int!
         $workoutId: ID!
       ) {
         createExercise(
           name: $name
           description: $description
           block: $block
-          orderInBlock: $orderInBlock
           workoutId: $workoutId
         ) {
           exercise {
@@ -129,7 +131,6 @@ export const USER_SIGNUP = gql`
             name
             description
             block
-            orderInBlock
             workout {
             id
             }
@@ -161,4 +162,37 @@ export const USER_SIGNUP = gql`
           }
         }
       }`;
+
+
+    export const ADD_ATHLETE = gql`
+      mutation (
+        $athleteUsername: String!
+        $coachUsername: String!
+      ) {
+        addAthlete(
+          athleteUsername: $athleteUsername
+          coachUsername: $coachUsername
+        ) {
+          user {
+            id
+            username
+          }
+        }
+      }`;
       
+
+      export const ASSIGN_PROGRAM = gql`
+      mutation (
+        $programId: ID!
+        $athleteUsername: String!
+      ) {
+        assignProgram(
+          programId: $programId
+          athleteUsername: $athleteUsername
+        ) {
+          program {
+            id
+            title
+          }
+        }
+      }`;

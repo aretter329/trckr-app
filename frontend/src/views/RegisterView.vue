@@ -11,6 +11,13 @@
         <input v-model="username" id="username" type="text" required>
       </div>
       <div>
+        <input type="radio" id="athlete" value="athlete" name="role" v-model="role" checked="checked">
+        <label for="athlete">Athlete</label>
+        <input type="radio" id="coach" value="coach" name="role" v-model="role">
+        <label for="coach">Coach</label>
+        
+      </div>
+      <div>
         <label for="password">Password:</label>
         <input v-model="password" id="password" type="password" required>
       </div>
@@ -20,6 +27,7 @@
       </div>
         <button type="submit">Register</button>
     </form>
+    {{role}}
     <p v-if="error">{{ error }}</p>
     <p v-if="success">{{ success }}</p>
   </div>
@@ -27,8 +35,6 @@
 
 <script setup>
 import { ref } from 'vue';
-import { getCSRFToken } from '../store/auth';
-import { useRouter } from 'vue-router';
 import { USER_SIGNUP } from '@/mutations';
 import { useMutation } from "@vue/apollo-composable";
 
@@ -38,8 +44,7 @@ const password = ref('');
 const confirmPassword = ref('');
 const error = ref('');
 const success = ref('');
-const title = ref('');
-const body = ref('');
+const role = ref('athlete');
 
 
 const createUser = useMutation(USER_SIGNUP, {
@@ -47,7 +52,9 @@ const createUser = useMutation(USER_SIGNUP, {
     return {
       username: username.value,
       email: email.value,
-      password: password.value  
+      password: password.value,
+      isCoach: role.value === 'coach',
+      isAthlete: role.value === 'athlete'
     };
   }
 });
@@ -69,7 +76,9 @@ const register = async () => {
     const response = await createUser.mutate({
       username: username.value,
       email: email.value,
-      password: password.value
+      password: password.value,
+      isCoach: role.value === 'coach',
+      isAthlete: role.value === 'athlete'
     });
     username.value = '';
     email.value = '';
