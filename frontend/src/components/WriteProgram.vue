@@ -3,50 +3,21 @@ import { ref } from 'vue';
 import { useMutation } from "@vue/apollo-composable";
 import { useUserStore } from "@/store/user";
 import { ADD_PROGRAM, ADD_DAY, ADD_WORKOUT, ADD_EXERCISE, ADD_SET } from '@/mutations';
-
+import ExerciseList from '@/components/ExerciseList.vue';
 const title = ref('');
 const notes = ref('');
 const userStore = useUserStore();
 const tags = ref([]);
-const sets = ref([{ weight: '', reps: '' }]);
 const days = ref([]);
-const exercise_states = ref([]);
 const day_states = ref([]);
-const blocks = [1,2,3,4,5,6];
 const program_id = ref();
 
-const addSet = (exercise) => {
-  let order = exercise.sets.length + 1;
-  exercise.sets.push({ order: order, weight: '', reps: '' });
-};
 
-const deleteSet = (index) => {
-  sets.value.splice(index, 1);
-};
-
-const addExercise = (workout) => {
-  workout.exercises.push({ name: '', 
-    sets: [{
-      order: 1,
-      weight: '',
-      reps: '',
-    }],
-  }
-  );
-};
-
-const expandExercise = (exercise) => {
-  exercise_states.value[exercise] = !exercise_states.value[exercise];
-};
-
-const deleteExercise = (workout, index) => {
-  workout.exercises.splice(index, 1);
-};
 
 //add logic to number the days as keys in the days dictionary, etc. 
 const addDay = (index) => {
   const day_number = days.value.length + 1;
-  days.value.push({ name: `Day ${day_number}`, number: day_number, workouts: [] });
+  days.value.push({ name: `Day ${day_number}`, number: day_number, workouts: [{ type: 'strength', order: 1, exercises: [], blocks: [] }] });
   day_states.value.push(true);
 };
 
@@ -233,61 +204,25 @@ const createSet = useMutation(ADD_SET, {
         
           
           <div class="workout-container" v-for="(workout, index) in day.workouts" :key="index" :class="workout.type">
-            <div class="centered-row">
-              <select id="workout-type" v-model="workout.type" style="width: 100px;">
-                <option value="strength">Strength</option>
-                <option value="cardio">Cardio</option>
-              </select>
-              <button @click="deleteWorkout(day, index)" class="delete-button">delete workout</button>
-            </div>
-            <div class="exercise-container" v-for="exercise, index in workout.exercises" :key="index" :class="`block${exercise.block}`">            
-              <div v-if="exercise_states[index]" style="display: flex;">
-                <p style="margin-left: 20px;">
-                  {{ exercise.name }} 
-                  <button class="edit-button" @click="expandExercise(index)">edit</button>
-                  <button class="delete-exercise delete-button" @click="deleteExercise(workout, index)">delete</button>
-                    <br/> 
-                  <div style="font-size: 12px;"> {{ exercise.sets.map(set => `${set.reps} @ ${set.weight}`).join(', ') }} </div>
-                </p>
-                
-              </div>
-              <div v-else>
-                <input type="text" v-model="exercise.name" placeholder="Exercise Name" style="width: 150px;"/>
-                <input type="text" v-model="exercise.description" placeholder="Description" style="width: 150px;"/> 
-                Block:<select v-model="exercise.block">
-                  <option v-for="block in blocks" :value="block">{{ block }}</option>
-                </select>
-                
+            
 
-                <table>
-                  <tr>
-                    <td v-for="set in exercise.sets" :key="set.index">
-                      <input type="number" v-model="set.weight" placeholder="weight"/>
-                    </td>
-                    <button @click="addSet(exercise)">+</button>
-                  </tr>
-                  <tr>
-                    <td v-for="set in exercise.sets" :key="set.index">
-                      <input type="number" v-model="set.reps" placeholder="reps"/>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td v-for="set in exercise.sets" :key="set.index">
-                      <button class="delete-button" @click="deleteSet(set.index)">(delete set)</button>
-                    </td>
-                  </tr>
-                </table>
-                <button @click="expandExercise(index)">done</button>
-              </div>
-            </div>
-            <button style="border: none" @click="addExercise(workout)">add exercise</button>
+            <div class="centered-row">
+            <select id="workout-type" v-model="workout.type" style="width: 100px;">
+              <option value="strength">Strength</option>
+              <option value="cardio">Cardio</option>
+              <option value="rest">Rest</option>
+            </select>
+            <button @click="deleteWorkout(day, index)" class="delete-button">delete workout</button>
           </div>
+          <ExerciseList :workout="workout"/>
+
+        </div>
+         
           <button style="width: 100px;" @click="addWorkout(day)">Add Workout</button>
         
       </div>
       <button style="height: 35px;" @click="addDay(index)">Add Day</button>
     </div> 
-    {{ days }}
     <textarea style="width: 50%" id="notes" v-model="notes" placeholder="Notes"></textarea>
     <button type="submit" @click="addProgram()">Save</button>
   </div>
@@ -386,12 +321,17 @@ const createSet = useMutation(ADD_SET, {
   }
 
   .cardio{
-    background-color: lightyellow;
+    background-color: var(--cardio-color);
   }
 
   .strength{ 
-    background-color: lightblue;
+    background-color: var(--strength-color);
   }
+
+  .rest{
+    background-color: gray;
+  }
+  
  
   *{
     background-color: transparent;

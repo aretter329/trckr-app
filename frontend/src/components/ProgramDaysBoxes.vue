@@ -96,4 +96,8 @@ const { result, loading, error } = useQuery(gql`
   background-color: var(--cardio-color);
 }
 
+.rest{
+  background-color: gray;
+}
+
 </style> 
