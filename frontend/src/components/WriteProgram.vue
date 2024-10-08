@@ -8,16 +8,14 @@ const title = ref('');
 const notes = ref('');
 const userStore = useUserStore();
 const tags = ref([]);
-const days = ref([]);
+const days = ref([{ name: 'Day 1', number: 1, workouts: [{ type: 'strength', order: 1, blocks: [{name: 'Block 1', exercises: [{name:'', sets:[{order: '', weight:'', reps:''}]}]}] }] }]);
 const day_states = ref([]);
 const program_id = ref();
-
-
 
 //add logic to number the days as keys in the days dictionary, etc. 
 const addDay = (index) => {
   const day_number = days.value.length + 1;
-  days.value.push({ name: `Day ${day_number}`, number: day_number, workouts: [{ type: 'strength', order: 1, exercises: [], blocks: [] }] });
+  days.value.push({ name: `Day ${day_number}`, number: day_number, workouts: [{ type: 'strength', order: 1, blocks: [{name: 'Block 1', exercises: []}] }] });
   day_states.value.push(true);
 };
 
@@ -31,7 +29,7 @@ const deleteDay = (number) => {
 
 const addWorkout = (day) => {
   let order = day.workouts.length + 1;
-  day.workouts.push({ type: 'strength', order: order, exercises: [], blocks: [] });
+  day.workouts.push({ type: 'strength', order: order, blocks: [{name: 'Block 1', exercises: [{name:'', sets:[]}]}] });
 };
 
 const deleteWorkout = (day, index) => {
@@ -194,6 +192,7 @@ const createSet = useMutation(ADD_SET, {
 <template>
 
   <div class="container">
+    {{ days}}
     <input type="text" id="title" v-model="title" placeholder="Program Name" style="width: 300px"/>
     <div class="days">
       <div class="day-container" v-for="day, index in days" :key="index">
@@ -201,24 +200,21 @@ const createSet = useMutation(ADD_SET, {
           {{ day.name }}
           <button class="edit-button" @click="deleteDay(day.number)">(delete day)</button>
         </div>
-        
-          
-          <div class="workout-container" v-for="(workout, index) in day.workouts" :key="index" :class="workout.type">
-            
-
-            <div class="centered-row">
-            <select id="workout-type" v-model="workout.type" style="width: 100px;">
-              <option value="strength">Strength</option>
-              <option value="cardio">Cardio</option>
-              <option value="rest">Rest</option>
-            </select>
-            <button @click="deleteWorkout(day, index)" class="delete-button">delete workout</button>
-          </div>
-          <ExerciseList :workout="workout"/>
-
-        </div>
          
-          <button style="width: 100px;" @click="addWorkout(day)">Add Workout</button>
+        <!-- the colored row; workout type drop down, delete button-->
+          <div class="workout-container" v-for="(workout, index) in day.workouts" :key="index" :class="workout.type">
+            <div class="centered-row">
+              <select id="workout-type" v-model="workout.type" style="width: 100px;">
+                <option value="strength">Strength</option>
+                <option value="cardio">Cardio</option>
+                <option value="rest">Rest</option>
+              </select>
+              <button @click="deleteWorkout(day, index)" class="delete-button">delete workout</button>
+            </div>
+            <ExerciseList :workout="workout"/>
+          </div>
+         
+        <button style="width: 100px;" @click="addWorkout(day)">Add Workout</button>
         
       </div>
       <button style="height: 35px;" @click="addDay(index)">Add Day</button>
@@ -286,6 +282,10 @@ const createSet = useMutation(ADD_SET, {
     margin: 0px 5px 5px 5px;
     border-radius: 5px;
   
+  }
+
+  #workout-type{
+    margin: 10px;
   }
 
   .workout-container{

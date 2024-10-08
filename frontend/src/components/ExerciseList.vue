@@ -11,8 +11,8 @@ const props = defineProps({
 });
 
 const sets = ref([{ weight: '', reps: '' }]);
-const currentExercise = ref({ name: '', sets: [{ weight: '', reps: '' }], block: 1 });
-const currentBlock = ref({ name: '', exercises: [] });
+const currentExercise = ref(props.workout.blocks[0].exercises[0]);
+const currentBlock = ref(props.workout.blocks[0]);
 //we may not need to keep track of order here if using draggable
 const addSet = () => {
   currentExercise.value.sets.push({ order: '', weight: '', reps: '' });
@@ -22,29 +22,17 @@ const deleteSet = (index) => {
   currentExercise.value.sets.splice(index, 1);
 };
 
-const addExercise = (workout) => {
-  workout.exercises.push({ name: '', 
-    sets: [{
-      order: 1,
-      weight: '',
-      reps: '',
-    }],
-  }
-  );
-};
-
 const deleteExercise = (block, index) => {
   block.exercises.splice(index, 1);
 };
 
-const appendExercise = () => {
- currentBlock.value.exercises.push(currentExercise.value);
-  currentExercise.value = { name: '', sets: [{ weight: '', reps: '' }], block: 1 };
+const saveExercise = () => {
+  
+ currentExercise.value = {};
 }
 
-const expandExercise = (index) => {
-  currentExercise.value = props.workout.exercises[index];
-  props.workout.exercises.splice(index, 1); 
+const expandExercise = (exercise) => {
+  currentExercise.value = exercise;
 }
 
 const addBlock = () => {
@@ -53,55 +41,66 @@ const addBlock = () => {
   currentBlock.value = props.workout.blocks[length];
 }
 
+const addExercise = (block) => {
+  const baseExercise = { name: '', sets: [{ weight: '', reps: '' }] };
+  currentBlock.value = block;
+  currentBlock.value.exercises.push(baseExercise);
+  currentExercise.value = baseExercise;
+}
+
 </script>
 
 <template>
   <div class='container'> 
-  <div v-for="block in workout.blocks" class="block">
+  <div v-for="(block, index) in workout.blocks" :class="['block']">
     <h3>{{ block.name }}</h3>
     <draggable v-model="block.exercises" tag="ul" group="exercises">
       <template #item="{element: exercise, index}">
         <li>
-          <div style="display: flex;" class='exercise-row'>
-            <p style="margin-left: 20px;">
-              {{ exercise.name }} 
-              <button class="edit-button" @click="expandExercise(index)">edit</button>
-              <button class="delete-exercise delete-button" @click="deleteExercise(block, index)">remove</button>
-                <br/> 
-              <div style="font-size: 12px;"> {{ exercise.sets.map(set => `${set.reps} @ ${set.weight}`).join(', ') }} </div>
-            </p>    
+          <!-- non-edit mode --> 
+          <div v-if="(currentExercise != exercise)" class="centered-row">
+            <div>  {{exercise.name}} <br/> <p style="font-size: 12px;">{{ exercise.sets.map(set => `${set.reps} @ ${set.weight}`).join(', ') }}</p> </div>
+            <button class="edit-button" @click="expandExercise(exercise)">edit</button>
+            <button class="delete-exercise delete-button" @click="deleteExercise(block, index)">remove</button>
+              
+            
+          </div>
+          <div v-else class="exercise-container">
+          <!--- edit mode -->
+            <input type="text" v-model="currentExercise.name" placeholder="Exercise Name" style="width: 150px;"/>
+            
+            <table>
+              <tr>
+                <td v-for="set, index in currentExercise.sets" :key="index">
+                  <input class="set-detail" type="number" v-model="set.weight" placeholder="weight"/>
+                </td>
+                <button @click="addSet">+</button>
+              </tr>
+              <tr>
+                <td v-for="set, index in currentExercise.sets" :key="index">
+                  <input class="set-detail" type="number" v-model="set.reps" placeholder="reps"/>
+                </td>
+              </tr>
+              <tr>
+                <td v-for="index in currentExercise.sets" :key="index">
+                  <button class="delete-button" @click="deleteSet(index)">(delete)</button>
+                </td>
+              </tr>
+            </table>
+            <input type="text" v-model="currentExercise.description" placeholder="Notes" style="width: 150px;"/> 
+
+            <button @click="saveExercise">Save</button>
+         
           </div>
         </li>
       </template>
+      
     </draggable>
+    <button @click="addExercise(block)"> + </button>
   </div>
 
   <button @click="addBlock" style="width: 100px">add block</button>
-  <div class="exercise-container">            
-    <input type="text" v-model="currentExercise.name" placeholder="Exercise Name" style="width: 150px;"/>
-              
-      <table>
-        <tr>
-          <td v-for="set, index in currentExercise.sets" :key="index">
-            <input class="set-detail" type="number" v-model="set.weight" placeholder="weight"/>
-          </td>
-          <button @click="addSet">+</button>
-        </tr>
-        <tr>
-          <td v-for="set, index in currentExercise.sets" :key="index">
-            <input class="set-detail" type="number" v-model="set.reps" placeholder="reps"/>
-          </td>
-        </tr>
-        <tr>
-          <td v-for="index in currentExercise.sets" :key="index">
-            <button class="delete-button" @click="deleteSet(index)">(delete)</button>
-          </td>
-        </tr>
-      </table>
-      <input type="text" v-model="currentExercise.description" placeholder="Notes" style="width: 150px;"/> 
-
-      <button @click="appendExercise">Add</button>
-    </div>
+  
   </div>
 </template>
 
@@ -113,11 +112,6 @@ const addBlock = () => {
   align-items: center;
 }
 .exercise-container{
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin: 10px;
-  border-radius: 5px;
-  background-color: rgb(238, 236, 236);
   width: 100%;
   overflow-x: auto;
 } 
@@ -131,6 +125,19 @@ ul{
   width: 70px;
 }
 
+li{
+  border: 1px solid #ccc;
+  background-color: white;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 5px;
+}
+
+.centered-row{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 .block{
   background-color: white; 
   width: 100%;
@@ -149,7 +156,25 @@ ul{
   border-radius: 5px;
   background-color: rgb(240, 240, 240);;
 }
+.block:nth-child(5n+1) {
+  border-left: var(--persian-blue) 5px solid;
+}
 
+.block:nth-child(5n+2) {
+  border-left: var(--mikado-yellow) 5px solid;
+}
+
+.block:nth-child(5n+3) {
+  border-left: var(--lime-green) 5px solid;
+}
+
+.block:nth-child(5n+4) {
+  border-left: var(--uranian-blue) 5px solid;
+}
+
+.block:nth-child(5n+5) {
+  border-left: var(--flame-orange) 5px solid;
+}
 
 
 </style>
