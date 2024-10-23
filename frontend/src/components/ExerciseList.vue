@@ -26,9 +26,16 @@ const deleteExercise = (block, index) => {
   block.exercises.splice(index, 1);
 };
 
+const deleteBlock = (index) => {
+  props.workout.blocks.splice(index, 1);
+};
+
 const saveExercise = () => {
-  
- currentExercise.value = {};
+  if (currentExercise.value.name.trim() === '') {
+    const index = currentBlock.value.exercises.indexOf(currentExercise.value);
+    currentBlock.value.exercises.splice(index, 1);
+  }
+  currentExercise.value = {};
 }
 
 const expandExercise = (exercise) => {
@@ -42,6 +49,7 @@ const addBlock = () => {
 }
 
 const addExercise = (block) => {
+  saveExercise();
   const baseExercise = { name: '', sets: [{ weight: '', reps: '' }] };
   currentBlock.value = block;
   currentBlock.value.exercises.push(baseExercise);
@@ -53,7 +61,8 @@ const addExercise = (block) => {
 <template>
   <div class='container'> 
   <div v-for="(block, index) in workout.blocks" :class="['block']">
-    <h3>{{ block.name }}</h3>
+    <h3>Block {{ index+1 }}</h3>
+    <button class="delete-block delete-button" @click="deleteBlock(index)">delete block</button>
     <draggable v-model="block.exercises" tag="ul" group="exercises">
       <template #item="{element: exercise, index}">
         <li>
@@ -62,8 +71,6 @@ const addExercise = (block) => {
             <div>  {{exercise.name}} <br/> <p style="font-size: 12px;">{{ exercise.sets.map(set => `${set.reps} @ ${set.weight}`).join(', ') }}</p> </div>
             <button class="edit-button" @click="expandExercise(exercise)">edit</button>
             <button class="delete-exercise delete-button" @click="deleteExercise(block, index)">remove</button>
-              
-            
           </div>
           <div v-else class="exercise-container">
           <!--- edit mode -->
@@ -82,8 +89,8 @@ const addExercise = (block) => {
                 </td>
               </tr>
               <tr>
-                <td v-for="index in currentExercise.sets" :key="index">
-                  <button class="delete-button" @click="deleteSet(index)">(delete)</button>
+                <td v-for="set, index in currentExercise.sets" :key="index">
+                  <button class="delete-button" @click="deleteSet(index)">(delete {{ index }})</button>
                 </td>
               </tr>
             </table>

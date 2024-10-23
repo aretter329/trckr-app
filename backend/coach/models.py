@@ -43,25 +43,31 @@ class Workout(models.Model):
     order_in_day = models.IntegerField()
     day = models.ForeignKey(Day, on_delete=models.CASCADE, related_name='workouts')
 
-    
+class Block(models.Model):
+    name = models.CharField(max_length=255)
+    order_in_workout = models.IntegerField()
+    workout = models.ForeignKey(Workout, on_delete=models.CASCADE, related_name='blocks')
+
+    def __str__(self):
+        return self.name
 
 class Exercise(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
-    block = models.IntegerField()
     order_in_block = models.IntegerField()
     #the sets and reps should likely be their own model with a foreign key to exercise
     #because they will may be different for each user & should encompass percent of 1RM  
-    workout = models.ForeignKey(Workout, on_delete=models.CASCADE, related_name='exercises')
-
+    block = models.ForeignKey(Block, on_delete=models.CASCADE, related_name='exercises')
+    
     def __str__(self):
         return self.name
     
 class Set(models.Model):
     reps = models.IntegerField()
     weight = models.IntegerField()
-    exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE, related_name='sets')
     number = models.IntegerField()
+    exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE, related_name='sets')
+    
     
     def __str__(self):
         return f'{self.reps} @ {self.weight}'

@@ -1,4 +1,101 @@
 
+TODO 10/23:
+- update the model/api calls to match new program format
+- after this, start using branches for specific topics 
+
+----------------------------------------------------------------------
+
+DONE: 
+- add 'delete block'  
+- force exercise name to be complete before saving exercises 
+- fix indexing of deleted reps 
+- get day and block names/numbers to be dynamic!! (deleting prior days should lower day # of other days)
+
+----------------------------------------------------------------------
+
+UI/UX: 
+- design a slick button/trash for deleting things and also a way to format the rows nicely
+
+
+------------------------------------------------------------------------------
+EXAMPLE gql mutation that works for adding program: 
+
+mutation {
+  createProgram(
+    title: "My Training Program3",
+    notes: "This program is designed to build strength and endurance.",
+    author: "aretter",  # replace with actual username
+    tags: [],
+    slug: "my-training-program-3",
+    assignedAthletes: [],  # replace with actual usernames
+    days: [
+      {
+        name: "Day 1",
+        orderInProgram: 1,
+        workouts: [
+          {
+            type: "strength",
+            orderInDay: 1,
+            blocks: [
+              {
+                name: "Block 1",
+                orderInWorkout: 1,
+                exercises: [
+                  {
+                    name: "Bench Press",
+                    description: "A compound exercise targeting the chest.",
+                    orderInBlock: 1,
+                    sets: [
+                      {
+                        reps: 10,
+                        weight: 100,
+                        number: 1
+                      },
+                      {
+                        reps: 8,
+                        weight: 110,
+                        number: 2
+                      }
+                    ]
+                  },
+                  {
+                    name: "Squats",
+                    description: "A fundamental lower body exercise.",
+                    orderInBlock: 2,
+                    sets: [
+                      {
+                        reps: 10,
+                        weight: 150,
+                        number: 1
+                      },
+                      {
+                        reps: 8,
+                        weight: 160,
+                        number: 2
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  ) {
+    program {
+      id
+      title
+      notes
+      author {
+        username
+      }
+    }
+  }
+}
+
+
+
 
 For the programs the hierarchy should be as follows: 
 

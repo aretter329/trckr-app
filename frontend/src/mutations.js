@@ -46,6 +46,8 @@ export const USER_SIGNUP = gql`
         $author: String!
         $tags: [String]!
         $slug: String!
+        $assignedAthletes: [String]!
+        $days: [DayInputType]!
       ) {
         createProgram(
           title: $title
@@ -53,6 +55,8 @@ export const USER_SIGNUP = gql`
           author: $author
           tags: $tags
           slug: $slug
+          assignedAthletes: $assignedAthletes
+          days: $days
         ) {
           program {
             id

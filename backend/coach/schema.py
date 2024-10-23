@@ -36,6 +36,36 @@ class SetType(DjangoObjectType):
     class Meta:
         model = models.Set
 
+class BlockType(DjangoObjectType):
+    class Meta:
+        model = models.Block
+
+class SetInputType(graphene.InputObjectType):
+    reps = graphene.Int()
+    weight = graphene.Int()
+    number = graphene.Int()
+
+class ExerciseInputType(graphene.InputObjectType):
+    name = graphene.String()
+    description = graphene.String()
+    order_in_block = graphene.Int()
+    sets = graphene.List(SetInputType)
+
+class BlockInputType(graphene.InputObjectType):
+    name = graphene.String()
+    order_in_workout = graphene.Int()
+    exercises = graphene.List(ExerciseInputType)
+
+class WorkoutInputType(graphene.InputObjectType):
+    type = graphene.String()
+    order_in_day = graphene.Int()
+    blocks = graphene.List(BlockInputType)
+
+class DayInputType(graphene.InputObjectType):
+    name = graphene.String()
+    order_in_program = graphene.Int()
+    workouts = graphene.List(WorkoutInputType)
+
 class CreateTag(graphene.Mutation):
     tag = graphene.Field(TagType)
 
@@ -57,6 +87,47 @@ class CreateProgram(graphene.Mutation):
         tags = graphene.List(graphene.String)
         slug = graphene.String(required=True)
         assigned_athletes = graphene.List(graphene.String)
+        days = graphene.List(DayInputType)
+
+    def mutate(self, info, title, notes, author, tags, slug, assigned_athletes, days):
+        author = models.User.objects.get(username=author)
+        program = models.Program(title=title, notes=notes, author=author, slug=slug)
+        program.save()
+        for tag in tags:
+            program.tags.add(models.Tag.objects.get(name=tag))
+        athletes  = models.User.objects.filter(username__in=assigned_athletes)
+        program.assigned_athletes.set(athletes)
+        
+        for day in days:
+            day_obj = models.Day(name=day.name, order_in_program=day.order_in_program, program=program)
+            day_obj.save()
+            for workout in day.workouts:
+                workout_obj = models.Workout(type=workout.type, order_in_day=workout.order_in_day, day=day_obj)
+                workout_obj.save()
+                for block in workout.blocks:
+                    block_obj = models.Block(name=block.name, order_in_workout=block.order_in_workout, workout=workout_obj)
+                    block_obj.save()
+                    for exercise in block.exercises:
+                        exercise_obj = models.Exercise(name=exercise.name, description=exercise.description, order_in_block=exercise.order_in_block, block=block_obj)
+                        exercise_obj.save()
+                        for set in exercise.sets:
+                            set_obj = models.Set(reps=set.reps, weight=set.weight, number=set.number, exercise=exercise_obj)
+                            set_obj.save()
+
+        return CreateProgram(program=program)
+
+    
+    """
+class CreateProgram(graphene.Mutation):
+    program = graphene.Field(ProgramType)
+
+    class Arguments:
+        title = graphene.String(required=True)
+        notes = graphene.String(required=True)
+        author = graphene.String(required=True)
+        tags = graphene.List(graphene.String)
+        slug = graphene.String(required=True)
+        assigned_athletes = graphene.List(graphene.String)
 
     def mutate(self, info, title, notes, author, tags, slug, assigned_athletes):
         author = models.User.objects.get(username=author)
@@ -65,7 +136,7 @@ class CreateProgram(graphene.Mutation):
         for tag in tags:
             program.tags.add(models.Tag.objects.get(name=tag))
         return CreateProgram(program=program)
-
+    """
     
 class CreateDay(graphene.Mutation):
     day = graphene.Field(DayType)
@@ -227,7 +298,8 @@ class Query(graphene.ObjectType):
     programs_by_tag = graphene.List(ProgramType, tag=graphene.String())
     days_by_program = graphene.List(DayType, program_id=graphene.ID())
     workouts_by_day = graphene.List(WorkoutType, day_id=graphene.ID())
-    exercises_by_workout = graphene.List(ExerciseType, workout_id=graphene.ID())
+    blocks_by_workout = graphene.List(BlockType, workout_id=graphene.ID())
+    exercises_by_block = graphene.List(ExerciseType, block_id=graphene.ID())
     sets_by_exercise = graphene.List(SetType, exercise_id=graphene.ID())
     program_days = graphene.List(DayType, program_id=graphene.ID())
     all_athletes_by_coach = graphene.List(UserType, coach_username=graphene.String())
@@ -235,13 +307,16 @@ class Query(graphene.ObjectType):
 
     def resolve_program_days(root, info, program_id):
         program = models.Program.objects.get(id=program_id)
-        return program.days.prefetch_related("workouts__exercises__sets")
+        return program.days.prefetch_related("workouts__blocks__exercises__sets")
 
     def resolve_sets_by_exercise(root, info, exercise_id):
         return models.Set.objects.filter(exercise_id=exercise_id)
+    
+    def resolve_blocks_by_workout(root, info, workout_id): 
+        return models.Block.objects.filter(workout_id=workout_id)
 
-    def resolve_exercises_by_workout(root, info, workout_id):
-        return models.Exercise.objects.filter(workout_id=workout_id)
+    def resolve_exercises_by_block(root, info, block_id):
+        return models.Exercise.objects.filter(block_id=block_id)
                                               
     def resolve_workouts_by_day(root, info, day_id):
         return models.Workout.objects.filter(day_id=day_id)

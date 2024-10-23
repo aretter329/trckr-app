@@ -48,19 +48,69 @@ const createProgram = useMutation(ADD_PROGRAM, {
   }
 });
 
+const formatDays = () => {
+  let formatted_days = [];
+  days.value.forEach((day, index) => {
+    let formatted_day = {
+      name: day.name,
+      orderInProgram: index,
+      workouts: []
+    };
+    day.workouts.forEach((workout, index) => {
+      let formatted_workout = {
+        type: workout.type,
+        orderInDay: index,
+        blocks: []
+      };
+      workout.blocks.forEach((block, index) => {
+        let formatted_block = {
+          name: block.name,
+          orderInWorkout: index,
+          exercises: []
+        };
+        block.exercises.forEach((exercise, index) => {
+          let formatted_exercise = {
+            name: exercise.name,
+            description: exercise.description,
+            orderInBlock: index,
+            sets: []
+          };
+          exercise.sets.forEach((set, index) => {
+            let formatted_set = {
+              weight: set.weight,
+              reps: set.reps,
+              number: index
+            };
+            formatted_exercise.sets.push(formatted_set);
+          });
+          formatted_block.exercises.push(formatted_exercise);
+        });
+        formatted_workout.blocks.push(formatted_block);
+      });
+      formatted_day.workouts.push(formatted_workout);
+    });
+    formatted_days.push(formatted_day);
+  });
+  return formatted_days;
+};
+
 const addProgram = async () => {
+  let days_input = formatDays();
+  console.log(days_input);
   try {
     const response = await createProgram.mutate({
       title: title.value,
       notes: notes.value,
       slug: title.value.toLowerCase().replace(/\s+/g, '-'),
       author: userStore.getUser.username, // Get the current user
-      tags: tags.value
+      tags: tags.value,
+      assignedAthletes: [],
+      days: days_input
     });
 
     program_id.value = response.data.createProgram.program.id;
     console.log(program_id.value);
-    addDays();
+    //addDays();
     /*
     title.value = '';
     notes.value = ''; */
@@ -197,7 +247,7 @@ const createSet = useMutation(ADD_SET, {
     <div class="days">
       <div class="day-container" v-for="day, index in days" :key="index">
         <div class="title-button" style="display: flex;">
-          {{ day.name }}
+          Day {{ index + 1 }}
           <button class="edit-button" @click="deleteDay(day.number)">(delete day)</button>
         </div>
          

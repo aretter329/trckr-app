@@ -18,21 +18,25 @@ const { result, loading, error } = useQuery(gql`
         id 
         type
         orderInDay
-        exercises{
+        blocks{
           id
           name
-          description 
-          block
-          orderInBlock
-          sets{
+          orderInWorkout
+          exercises{
             id
-            reps
-            weight
-            number
+            name
+            description 
+            orderInBlock
+            sets{
+              id
+              reps
+              weight
+              number
+            }
           }
         }
+      }
     }
-  }
 }
 `);
 </script>
@@ -45,12 +49,16 @@ const { result, loading, error } = useQuery(gql`
           <div v-for="workout in day.workouts" :key="workout.id" class="workout-box" :class="workout.type">
             <div class="workout-type">
               {{ workout.type }}
-              <div v-for="exercise in workout.exercises" :key="exercise.id" class="exercise-box">
-                {{ exercise.name }} <br/>
-                <div class="set-list">
-                  {{ exercise.sets.map(set => `${set.reps} @ ${set.weight}`).join(', ') }}
+              <div v-for="block in workout.blocks" :key="block.id" class="exercise-box">
+                {{ block.name }} <br/>
+                <div v-for="exercise in block.exercises" :key="exercise.id" class="exercise-box">
+                  {{ exercise.name }} <br/>
+                  {{ exercise.description }} <br/>
+                  <div class="set-list">
+                    {{ exercise.sets.map(set => `${set.reps} @ ${set.weight}`).join(', ') }}
+                  </div>
                 </div>
-              </div>
+              </div>  
           </div>
         </div>
       </div>
