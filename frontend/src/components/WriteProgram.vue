@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useMutation } from "@vue/apollo-composable";
 import { useUserStore } from "@/store/user";
-import { ADD_PROGRAM, ADD_DAY, ADD_WORKOUT, ADD_EXERCISE, ADD_SET } from '@/mutations';
+import { ADD_PROGRAM } from '@/mutations';
 import ExerciseList from '@/components/ExerciseList.vue';
 const title = ref('');
 const notes = ref('');
@@ -118,125 +118,6 @@ const addProgram = async () => {
     console.error(error);
   }
 };
-
-const makeDay = async (day) => {
-  try {
-    const response = await createDay.mutate({
-      name: day.name,
-      programId: program_id.value,
-      orderInProgram: day.number
-
-    });
-    let day_id = response.data.createDay.day.id;
-    for (let workout of day.workouts) {
-      makeWorkout(workout, day_id);
-    }
-    
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-const addDays = () => {
-  days.value.forEach(day => {
-    makeDay(day);
-  });
-};
-
-const createDay = useMutation(ADD_DAY, {
-  variables() {
-    return {
-      name: '',
-      program: program_id.value,
-      orderInProgram: ''
-    };
-  }
-});
-
-const makeWorkout = async (workout, day_id) => {
-  try {
-    const response = await createWorkout.mutate({
-      type: workout.type,
-      dayId: day_id,
-      orderInDay: workout.order
-    });
-    
-    let workout_id = response.data.createWorkout.workout.id;
-    for (let exercise of workout.exercises) {
-      makeExercise(exercise, workout_id);
-    }
-    
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-const createWorkout = useMutation(ADD_WORKOUT, {
-  variables() {
-    return {
-      type: '',
-      dayId: '',
-      orderInDay: ''
-    };
-  }
-});
-
-const makeExercise = async (exercise, workout_id) => {
-  try {
-    const response = await createExercise.mutate({
-      name: exercise.name,
-      workoutId: workout_id,
-      block: exercise.block,
-      description: exercise.description,
-      orderInBlock: exercise.order
-    });
-    let exercise_id = response.data.createExercise.exercise.id;
-    for (let set of exercise.sets) {
-      makeSet(set, exercise_id);
-    }
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-const createExercise = useMutation(ADD_EXERCISE, {
-  variables() {
-    return {
-      name: '',
-      workoutId: '',
-      block: '',
-      description: '',
-    };
-  }
-});
-
-const makeSet = async (set, exercise_id) => {
-  try {
-    const response = await createSet.mutate({
-      weight: set.weight,
-      reps: set.reps,
-      exerciseId: exercise_id,
-      number: set.order
-    });
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-const createSet = useMutation(ADD_SET, {
-  variables() {
-    return {
-      weight: '',
-      reps: '',
-      exerciseId: '',
-      number: ''
-    };
-  }
-});
-
-
-
-
 </script>
 
 <template>

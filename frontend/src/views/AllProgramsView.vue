@@ -5,6 +5,7 @@ import gql from "graphql-tag";
 import { ref } from 'vue';
 import WriteProgram from "@/components/WriteProgram.vue";
 import { useUserStore } from "@/store/user";
+import LoggedWorkouts from "../components/LoggedWorkouts.vue";
 
 const tagName = ref('');
 const message = ref('');
@@ -77,6 +78,49 @@ const { result: assignedPrograms, loading1, error1 } = useQuery(gql`
   }
 );
 
+const { result: loggedWorkouts, loading2, error2 } = useQuery(gql` 
+  query{
+    loggedWorkoutsByAthlete(athleteUsername: "${username}") {
+      athlete{
+      username
+      }
+      date
+      notes
+      id
+      workout{
+        id 
+        type
+        orderInDay
+        blocks{
+          id
+          name
+          orderInWorkout
+          exercises{
+            id
+            name
+            description 
+            orderInBlock
+            sets{
+              id
+              reps
+              weight
+              number
+            }
+          }
+        }
+      }
+    }
+  }`,
+  {
+    variables() {
+      return {
+        athleteUsername: username
+      };
+    }
+  }
+);
+
+
 
 
 // Use the mutation
@@ -132,6 +176,13 @@ const addTag = async () => {
         :showAuthor="false"
         :allowAssignment="false"/>
       </div>
+
+      <div v-if="loggedWorkouts" style="width: 100%">
+      <LoggedWorkouts 
+        :loggedWorkouts="loggedWorkouts.loggedWorkoutsByAthlete"
+      />
+      </div>
+
     </div>
   </div>
 </template>

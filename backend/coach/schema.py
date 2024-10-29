@@ -40,6 +40,10 @@ class LoggedWorkoutType(DjangoObjectType):
     class Meta:
         model = models.LoggedWorkout
 
+class LoggedSetType(DjangoObjectType):
+    class Meta:
+        model = models.LoggedSet
+
 
 class BlockType(DjangoObjectType):
     class Meta:
@@ -321,6 +325,18 @@ class Query(graphene.ObjectType):
     program_days = graphene.List(DayType, program_id=graphene.ID())
     all_athletes_by_coach = graphene.List(UserType, coach_username=graphene.String())
     programs_by_athlete = graphene.List(ProgramType, athlete_username=graphene.String())
+    logged_workouts_by_athlete = graphene.List(LoggedWorkoutType, athlete_username=graphene.String())
+    logged_sets_by_workout = graphene.List(LoggedSetType, workout_id=graphene.ID())
+
+    def resolve_logged_workouts_by_athlete(root, info, athlete_username):
+        athlete = models.User.objects.get(username=athlete_username)
+        return models.LoggedWorkout.objects.filter(athlete=athlete)
+    
+    def resolve_logged_sets_by_workout(root, info, workout_id):
+        return models.LoggedSet.objects.filter(logged_workout__workout_id=workout_id)
+    
+    def resolve_logged_sets_by_workout(root, info, workout_id):
+        return models.LoggedSet.objects.filter(logged_workout__id=workout_id)
 
     def resolve_program_days(root, info, program_id):
         program = models.Program.objects.get(id=program_id)
