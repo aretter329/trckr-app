@@ -36,6 +36,11 @@ class SetType(DjangoObjectType):
     class Meta:
         model = models.Set
 
+class LoggedWorkoutType(DjangoObjectType):
+    class Meta:
+        model = models.LoggedWorkout
+
+
 class BlockType(DjangoObjectType):
     class Meta:
         model = models.Block
@@ -65,6 +70,18 @@ class DayInputType(graphene.InputObjectType):
     name = graphene.String()
     order_in_program = graphene.Int()
     workouts = graphene.List(WorkoutInputType)
+
+class LoggedSetInput(graphene.InputObjectType):
+    set_id = graphene.ID()
+    reps_completed = graphene.Int()
+    weight_completed = graphene.Int()
+
+class LoggedWorkoutInput(graphene.InputObjectType):
+    athlete_username = graphene.String()
+    notes = graphene.String()
+    workout_id = graphene.ID()
+    date = graphene.Date()
+    sets = graphene.List(LoggedSetInput)
 
 class CreateTag(graphene.Mutation):
     tag = graphene.Field(TagType)
@@ -116,27 +133,6 @@ class CreateProgram(graphene.Mutation):
 
         return CreateProgram(program=program)
 
-    
-    """
-class CreateProgram(graphene.Mutation):
-    program = graphene.Field(ProgramType)
-
-    class Arguments:
-        title = graphene.String(required=True)
-        notes = graphene.String(required=True)
-        author = graphene.String(required=True)
-        tags = graphene.List(graphene.String)
-        slug = graphene.String(required=True)
-        assigned_athletes = graphene.List(graphene.String)
-
-    def mutate(self, info, title, notes, author, tags, slug, assigned_athletes):
-        author = models.User.objects.get(username=author)
-        program = models.Program(title=title, notes=notes, author=author, slug=slug, assigned_athletes=assigned_athletes)
-        program.save()
-        for tag in tags:
-            program.tags.add(models.Tag.objects.get(name=tag))
-        return CreateProgram(program=program)
-    """
     
 class CreateDay(graphene.Mutation):
     day = graphene.Field(DayType)
@@ -276,6 +272,26 @@ class AssignProgram(graphene.Mutation):
         program.save()
         return AssignProgram(program=program)
     
+class LogWorkout(graphene.Mutation):
+    class Arguments: 
+        athlete_username = graphene.String(required=True)
+        workout_id = graphene.ID(required=True)
+        sets = graphene.List(LoggedSetInput)
+        notes = graphene.String(required=False)
+    
+    logged_workout = graphene.Field(LoggedWorkoutType)
+
+    def mutate(self, info, athlete_username, notes, workout_id, sets):
+        athlete = models.User.objects.get(username=athlete_username)
+        workout = models.Workout.objects.get(id=workout_id)
+        logged_workout = models.LoggedWorkout(athlete=athlete, workout=workout, notes=notes)
+        logged_workout.save()
+        for set in sets:
+            logged_set = models.LoggedSet(set=models.Set.objects.get(id=set.set_id), reps_completed=set.reps_completed, weight_completed=set.weight_completed, logged_workout=logged_workout)
+            logged_set.save()
+        return LogWorkout(logged_workout=logged_workout)
+
+    
 class Mutation(graphene.ObjectType):
     create_tag = CreateTag.Field()
     create_program = CreateProgram.Field()
@@ -289,6 +305,7 @@ class Mutation(graphene.ObjectType):
     create_set = CreateSet.Field()
     add_athlete = AddAthlete.Field()
     assign_program = AssignProgram.Field()
+    log_workout = LogWorkout.Field()
 
 class Query(graphene.ObjectType):
     all_programs = graphene.List(ProgramType)

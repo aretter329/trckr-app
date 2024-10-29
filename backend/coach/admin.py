@@ -1,5 +1,5 @@
 from django.contrib import admin
-from coach.models import Program, Tag, User, Exercise, Workout, Day, Set, Block
+from coach.models import Program, Tag, User, Exercise, Workout, Day, Set, Block, LoggedWorkout, LoggedSet
 
 
 @admin.register(User)
@@ -62,7 +62,18 @@ class DayAdmin(admin.ModelAdmin):
 @admin.register(Set)
 class SetAdmin(admin.ModelAdmin):
     model = Set
+    list_display = ('id', 'reps', 'weight', 'number')
 
 @admin.register(Block)
 class SetAdmin(admin.ModelAdmin):
     model = Block
+
+@admin.register(LoggedWorkout)
+class LoggedWorkoutAdmin(admin.ModelAdmin):
+    model = LoggedWorkout
+    list_display = ('id', 'date', 'workout', 'athlete')
+
+@admin.register(LoggedSet)
+class LoggedSetAdmin(admin.ModelAdmin):
+    model = LoggedSet
+    list_display = ('id', 'reps_completed', 'weight_completed')

@@ -1,6 +1,7 @@
 <script setup> 
 import { useQuery } from '@vue/apollo-composable';
 import gql from 'graphql-tag';
+import WorkoutModal from './WorkoutModal.vue';
 const props = defineProps({
   program_id: {
     type: String,
@@ -39,6 +40,8 @@ const { result, loading, error } = useQuery(gql`
     }
 }
 `);
+
+
 </script>
 
 <template> 
@@ -49,11 +52,13 @@ const { result, loading, error } = useQuery(gql`
           <div v-for="workout in day.workouts" :key="workout.id" class="workout-box" :class="workout.type">
             <div class="workout-type">
               {{ workout.type }}
-              <div v-for="block in workout.blocks" :key="block.id" class="exercise-box">
-                {{ block.name }} <br/>
+              <WorkoutModal 
+                :workout="workout" 
+              />
+              <div v-for="block in workout.blocks" :key="block.id" class="p-block-div">
+
                 <div v-for="exercise in block.exercises" :key="exercise.id" class="exercise-box">
                   {{ exercise.name }} <br/>
-                  {{ exercise.description }} <br/>
                   <div class="set-list">
                     {{ exercise.sets.map(set => `${set.reps} @ ${set.weight}`).join(', ') }}
                   </div>
@@ -86,6 +91,7 @@ const { result, loading, error } = useQuery(gql`
   margin: 10px;
   padding: 10px;
   border: 1px solid gray;
+  background: white; 
 }
 
 .day-name{
@@ -94,18 +100,9 @@ const { result, loading, error } = useQuery(gql`
 }
 
 .exercise-box{
-  margin: 5px;}
-
-.strength{
-  background-color: var(--strength-color);
+  margin: 5px;
 }
 
-.cardio{
-  background-color: var(--cardio-color);
-}
 
-.rest{
-  background-color: gray;
-}
 
 </style> 

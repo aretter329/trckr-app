@@ -71,3 +71,22 @@ class Set(models.Model):
     
     def __str__(self):
         return f'{self.reps} @ {self.weight}'
+    
+class LoggedWorkout(models.Model):
+    athlete = models.ForeignKey(User, on_delete=models.CASCADE, related_name='logged_workouts')
+    date = models.DateTimeField(auto_now_add=True)
+    workout = models.ForeignKey(Workout, on_delete=models.CASCADE, related_name='logged_workouts')
+    notes = models.TextField()
+    
+    def __str__(self):
+        return f'{self.athlete} {self.date} {self.workout}'
+    
+
+class LoggedSet(models.Model):
+    set = models.ForeignKey(Set, on_delete=models.CASCADE, related_name='logged_sets')
+    reps_completed = models.IntegerField()
+    weight_completed = models.IntegerField()
+    logged_workout = models.ForeignKey(LoggedWorkout, on_delete=models.CASCADE, related_name='logged_sets')
+    
+    def __str__(self):
+        return f'{self.set} {self.reps_completed} @ {self.weight_completed}'

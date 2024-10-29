@@ -49,10 +49,35 @@
   --lime-green: #8de969;
   --strength-color: #ffc19d;
   --cardio-color: #b6ff99;
- 
+}
 
+.p-block-div{
+  background-color: white; 
+  width: 100%;
+  margin: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: rgb(238, 236, 236);
+  padding: 10px;
+}
+.p-block-div:nth-child(5n+1) {
+  border-left: var(--persian-blue) 5px solid;
+}
 
-  
+.p-block-div:nth-child(5n+2) {
+  border-left: var(--mikado-yellow) 5px solid;
+}
+
+.p-block-div:nth-child(5n+3) {
+  border-left: var(--lime-green) 5px solid;
+}
+
+.p-block-div:nth-child(5n+4) {
+  border-left: var(--uranian-blue) 5px solid;
+}
+
+.p-block-div:nth-child(5n+5) {
+  border-left: var(--flame-orange) 5px solid;
 }
 /* 
 @media (prefers-color-scheme: dark) {

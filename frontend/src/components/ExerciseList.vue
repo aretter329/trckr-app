@@ -35,7 +35,7 @@ const saveExercise = () => {
     const index = currentBlock.value.exercises.indexOf(currentExercise.value);
     currentBlock.value.exercises.splice(index, 1);
   }
-  currentExercise.value = {};
+  currentExercise.value = props.workout.blocks[0].exercises[0];
 }
 
 const expandExercise = (exercise) => {
@@ -60,8 +60,9 @@ const addExercise = (block) => {
 
 <template>
   <div class='container'> 
-  <div v-for="(block, index) in workout.blocks" :class="['block']">
+  <div v-for="(block, index) in workout.blocks" class="p-block-div">
     <h3>Block {{ index+1 }}</h3>
+    {{ currentExercise.name}}
     <button class="delete-block delete-button" @click="deleteBlock(index)">delete block</button>
     <draggable v-model="block.exercises" tag="ul" group="exercises">
       <template #item="{element: exercise, index}">
@@ -145,15 +146,6 @@ li{
   justify-content: space-between;
   align-items: center;
 }
-.block{
-  background-color: white; 
-  width: 100%;
-  margin: 5px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: rgb(238, 236, 236);
-  padding: 10px;
-}
 
 .exercise-row{
   display: flex;
@@ -162,25 +154,6 @@ li{
   border: 1px solid #ccc;
   border-radius: 5px;
   background-color: rgb(240, 240, 240);;
-}
-.block:nth-child(5n+1) {
-  border-left: var(--persian-blue) 5px solid;
-}
-
-.block:nth-child(5n+2) {
-  border-left: var(--mikado-yellow) 5px solid;
-}
-
-.block:nth-child(5n+3) {
-  border-left: var(--lime-green) 5px solid;
-}
-
-.block:nth-child(5n+4) {
-  border-left: var(--uranian-blue) 5px solid;
-}
-
-.block:nth-child(5n+5) {
-  border-left: var(--flame-orange) 5px solid;
 }
 
 
