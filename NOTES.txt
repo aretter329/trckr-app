@@ -1,3 +1,12 @@
+IDEAS: 
+- add detail to programs/workouts to assign days to them 
+  - then can have 'today's workout' display on athlete page 
+- remove ability to write programs from athletes 
+- add functionality to edit programs for coaches 
+- allow athletes to edit workouts after completing them 
+  - maybe change logic of original workout filling out
+  - only let there be one 'attempt' at a workout for a given day of a program (you can only do day 1 workout 1 once)
+
 
 TODO 10/23:
 - update the model/api calls to match new program format

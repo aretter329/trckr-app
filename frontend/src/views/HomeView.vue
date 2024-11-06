@@ -3,7 +3,9 @@ import { useUserStore } from "@/store/user";
 import { onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { ref } from "vue";
+import WODs from '../components/WODs.vue';
 
+const calendar = ref(null);
 const userStore = useUserStore();
 const router = useRouter();
 const user = ref({
@@ -12,11 +14,28 @@ const user = ref({
   info: userStore.getUser || {}
 })
 
-const logout = () => {
-  userStore.removeToken();
-  userStore.removeUser();
-  router.push("/login");
-};
+/*content: change font color 
+  highlight: change background color
+  fillMode: light, dark, none
+  color: green, red, blue, yellow, orange, purple, pink, teal, cyan, lime, amber, brown, grey, white, black
+  dot: puts dot below date
+  POPOVER  can have a brief description of the workout (this is only helpful on desktop)
+  */
+
+const date= ref();
+const attrs = ref([
+  { key: 'today', 
+    highlight: {
+      color: 'green', 
+      fillMode: 'light',
+    }, 
+    dates: new Date(),
+    popover: {
+      label: 'Today',
+    }
+  }
+    
+])
 
 onMounted(() => {
   if (!user.value.token) {
@@ -31,12 +50,34 @@ onMounted(() => {
 
 <template>
   <h1> welcome to home page </h1>
-  <div v-if="user.isAuthenticated">
-    <p v-if="userStore.user">{{ `hi, ${userStore.getUser.username}` }}</p>
-    <p> youre logged in </p>
-    <button @click="logout">Logout</button>
+
+  <div class="wod-container"> 
+    <WODs />
+    {{ date }}
+    <VDatePicker 
+      ref="calendar" 
+      transparent 
+      borderless 
+      :color="'green'" 
+      v-model="date"
+      :attributes="attrs">
+      <template #footer>
+        <button> footer </button>
+      </template>
+    </VDatePicker>
   </div>
-  <p v-else> You are not logged in 
-    <router-link to="/login">Login</router-link>
-  </p>
+ 
 </template>
+
+<style scoped>
+  * {
+    text-align: center;
+  }
+  
+  .wod-container {
+    border: 3px solid green;
+    margin: auto;
+    padding: 10px;
+    width: 50%;
+  }
+</style>

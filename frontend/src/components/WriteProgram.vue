@@ -4,6 +4,10 @@ import { useMutation } from "@vue/apollo-composable";
 import { useUserStore } from "@/store/user";
 import { ADD_PROGRAM } from '@/mutations';
 import ExerciseList from '@/components/ExerciseList.vue';
+import VueDatePicker from '@vuepic/vue-datepicker';
+
+import '@vuepic/vue-datepicker/dist/main.css'
+
 const title = ref('');
 const notes = ref('');
 const userStore = useUserStore();
@@ -15,7 +19,7 @@ const program_id = ref();
 //add logic to number the days as keys in the days dictionary, etc. 
 const addDay = (index) => {
   const day_number = days.value.length + 1;
-  days.value.push({ name: `Day ${day_number}`, number: day_number, workouts: [{ type: 'strength', order: 1, blocks: [{name: 'Block 1', exercises: []}] }] });
+  days.value.push({ name: `Day ${day_number}`, number: day_number, workouts: [] });
   day_states.value.push(true);
 };
 
@@ -127,9 +131,9 @@ const addProgram = async () => {
     <input type="text" id="title" v-model="title" placeholder="Program Name" style="width: 300px"/>
     <div class="days">
       <div class="day-container" v-for="day, index in days" :key="index">
-        <div class="title-button" style="display: flex;">
-          Day {{ index + 1 }}
-          <button class="edit-button" @click="deleteDay(day.number)">(delete day)</button>
+        <div class="title-row">
+          <span style="flex-grow: 1; text-align: center;"> Day {{ index + 1 }} </span>
+          <button class="right-button" @click="deleteDay(day.number)">(delete day)</button>
         </div>
          
         <!-- the colored row; workout type drop down, delete button-->
@@ -140,6 +144,7 @@ const addProgram = async () => {
                 <option value="cardio">Cardio</option>
                 <option value="rest">Rest</option>
               </select>
+                <VueDatePicker v-model="workout.date"></VueDatePicker>
               <button @click="deleteWorkout(day, index)" class="delete-button">delete workout</button>
             </div>
             <ExerciseList :workout="workout"/>
@@ -287,15 +292,12 @@ const addProgram = async () => {
     margin-left: auto;
   }
 
-  .edit-button{
-    border: none;
-    padding: none; 
-    margin-left: 20px; 
-  }
+  
 
   form{
     display: flex; 
     flex-direction: column;
     align-items: center;
   }
+  
 </style>

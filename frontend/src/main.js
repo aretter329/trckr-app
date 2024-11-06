@@ -10,6 +10,15 @@ import {
 } from "@apollo/client/core";
 import { DefaultApolloClient } from "@vue/apollo-composable";
 import { createPinia } from 'pinia'
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { faTrash, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { setupCalendar, Calendar, DatePicker } from 'v-calendar';
+import 'v-calendar/style.css';
+
+library.add(faTrash);
+library.add(faPlus);
+
 
 const httpLink = createHttpLink({
   uri: "http://localhost:8000/graphql/",
@@ -33,16 +42,20 @@ const app = createApp({
   },
 
   render: () => h(App),
-});
+}).component("font-awesome-icon", FontAwesomeIcon);
 
 
 //createApp(App).use(createPinia()).use(router).use(apolloProvider)
 // ^^ not sure why this one uses 'apollo provider' isntead 
 app.use(createPinia());
 app.use(router)
+app.use(setupCalendar, {});
 
 
 //const authStore = useAuthStore();
 //authStore.setCsrfToken();
 
 app.mount('#app')
+
+app.component('VCalendar', Calendar)
+app.component('VDatePicker', DatePicker)

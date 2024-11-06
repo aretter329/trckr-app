@@ -1,6 +1,8 @@
 <script setup> 
 import { ref } from 'vue';
 import draggable from 'vuedraggable';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { faPhone } from '@fortawesome/free-solid-svg-icons';
 
 
 const props = defineProps({
@@ -61,17 +63,19 @@ const addExercise = (block) => {
 <template>
   <div class='container'> 
   <div v-for="(block, index) in workout.blocks" class="p-block-div">
-    <h3>Block {{ index+1 }}</h3>
-    {{ currentExercise.name}}
-    <button class="delete-block delete-button" @click="deleteBlock(index)">delete block</button>
+    <div class="title-row">
+      <h3>Block {{ index+1 }}</h3>
+      <font-awesome-icon icon="trash" @click="deleteBlock(index)"/>
+      
+    </div>
     <draggable v-model="block.exercises" tag="ul" group="exercises">
       <template #item="{element: exercise, index}">
         <li>
           <!-- non-edit mode --> 
-          <div v-if="(currentExercise != exercise)" class="centered-row">
+          <div v-if="(currentExercise != exercise)" class="title-row">
             <div>  {{exercise.name}} <br/> <p style="font-size: 12px;">{{ exercise.sets.map(set => `${set.reps} @ ${set.weight}`).join(', ') }}</p> </div>
-            <button class="edit-button" @click="expandExercise(exercise)">edit</button>
-            <button class="delete-exercise delete-button" @click="deleteExercise(block, index)">remove</button>
+            <button class="right-button" @click="expandExercise(exercise)">edit</button>
+            <button class="right-button" @click="deleteExercise(block, index)">remove</button>
           </div>
           <div v-else class="exercise-container">
           <!--- edit mode -->
@@ -104,7 +108,7 @@ const addExercise = (block) => {
       </template>
       
     </draggable>
-    <button @click="addExercise(block)"> + </button>
+    <font-awesome-icon icon="plus" @click="addExercise(block)"/>
   </div>
 
   <button @click="addBlock" style="width: 100px">add block</button>

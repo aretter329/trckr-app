@@ -1,21 +1,61 @@
 <script setup>
 import { RouterLink, RouterView } from "vue-router";
+import { useUserStore } from "@/store/user";
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { onMounted } from "vue";
+
+const router = useRouter();
+const userStore = useUserStore();
+const user = ref({
+  isAuthenticated: false, 
+  token: userStore.getToken || "", 
+  info: userStore.getUser || {}
+})
+
+const logout = () => {
+  userStore.removeToken();
+  userStore.removeUser();
+  router.push("/login");
+};
+
+onMounted(() => {
+  if (!user.value.token) {
+    router.push("/login");
+  }
+  else{
+    user.value.isAuthenticated = true; 
+  }
+});
+
+
+
+const showMenu = ref(false);
 </script>
 
 <template>
+  
   <header>
     <nav>
-      <RouterLink to="/">
+      <div v-if="user.isAuthenticated" @mouseover="showMenu = true" @mouseleave="showMenu = false">
+        {{ userStore.getUser.username }}
+        <div v-if="showMenu" class="dropdown-menu">
+          <RouterLink to="/profile">Profile</RouterLink>
+          <RouterLink to="/settings">Settings</RouterLink>
+          <div @click="logout">Logout</div>
+        </div>
+      </div>
+      <RouterLink to="/" :class="{ active: $route.path === '/'}">
         <div class="nav-link">
           Home
         </div>
       </RouterLink>
-      <RouterLink to="/all-programs">
+      <RouterLink to="/all-programs" :class="{ active: $route.path === '/all-programs'}">
         <div class="nav-link">
           Programs
         </div>
       </RouterLink>
-      <RouterLink to="/athletes">
+      <RouterLink to="/athletes" :class="{ active: $route.path === '/athletes'}">
         <div class="nav-link">
           Athletes
         </div>
@@ -26,9 +66,8 @@ import { RouterLink, RouterView } from "vue-router";
 
   <body>
     <RouterView />
+      
   </body>
-  
-  
  
 </template>
 
@@ -54,8 +93,24 @@ import { RouterLink, RouterView } from "vue-router";
 
   body{
     padding-top: 2rem;
-    background-color: rgb(248, 247, 255)
+    background-color: rgb(248, 247, 255);
+    
   }
 
+  .active {
+    font-weight: bold;
+    background-color: var(--uranian-blue);
+  }
+
+  .dropdown-menu {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    background-color: var(--dodger-blue);
+    color: white;
+    border-radius: 5px;
+    padding: 5px;
+    margin-top: 5px;
+  }
  
 </style>
