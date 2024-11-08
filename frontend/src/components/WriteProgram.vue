@@ -144,7 +144,6 @@ const addProgram = async () => {
                 <option value="cardio">Cardio</option>
                 <option value="rest">Rest</option>
               </select>
-                <VueDatePicker v-model="workout.date"></VueDatePicker>
               <button @click="deleteWorkout(day, index)" class="delete-button">delete workout</button>
             </div>
             <ExerciseList :workout="workout"/>

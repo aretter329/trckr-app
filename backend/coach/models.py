@@ -40,8 +40,8 @@ class Day(models.Model):
     
 class Workout(models.Model):
     type = models.CharField(max_length=255)
-    order_in_day = models.IntegerField()
-    day = models.ForeignKey(Day, on_delete=models.CASCADE, related_name='workouts')
+    order_in_day = models.IntegerField(null=True, blank=True)
+    day = models.ForeignKey(Day, on_delete=models.CASCADE, related_name='workouts', null=True, blank=True)
 
 class Block(models.Model):
     name = models.CharField(max_length=255)
@@ -74,9 +74,11 @@ class Set(models.Model):
     
 class LoggedWorkout(models.Model):
     athlete = models.ForeignKey(User, on_delete=models.CASCADE, related_name='logged_workouts')
+    assigned_date = models.DateTimeField()
     date = models.DateTimeField(auto_now_add=True)
     workout = models.ForeignKey(Workout, on_delete=models.CASCADE, related_name='logged_workouts')
     notes = models.TextField()
+    
     
     def __str__(self):
         return f'{self.athlete} {self.date} {self.workout}'

@@ -4,6 +4,8 @@ import { defineProps, ref } from "vue";
 import ProgramDaysBoxes from "./ProgramDaysBoxes.vue";
 import { useMutation } from "@vue/apollo-composable";
 import { ASSIGN_PROGRAM } from "@/mutations";
+import { useQuery } from "@vue/apollo-composable";
+import { GET_PROGRAM_WORKOUTS } from "@/queries";
 
 const props = defineProps({
   programs: {
@@ -55,26 +57,6 @@ function toggleCollapse(slug, id) {
 };
 
 
-const assignToAthlete = async (program_id, athlete) => {
-  try {
-    const response = await assignProgramMutation.mutate({
-      programId: program_id,
-      athleteUsername: athlete
-    });
-    console.log(response);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-const assignProgramMutation = useMutation(ASSIGN_PROGRAM, {
-  variables(){
-    return {
-      programId: '',
-      athleteUsername: ''
-    }
-  }
-})
 </script>
 
 <template>
@@ -88,7 +70,6 @@ const assignProgramMutation = useMutation(ASSIGN_PROGRAM, {
           {{ program.tags.map(tag => tag.name).join(', ') }}
         </div>
 
-        <button v-show="allowAssignment" @click="assignToAthlete(program.id, 'athlete1')">Assign Program</button>
         <div class="program-date">
           {{ formatDate(program.dateCreated) }}
         </div>
@@ -102,8 +83,8 @@ const assignProgramMutation = useMutation(ASSIGN_PROGRAM, {
         </div>
       </div>
       <div v-if="isCollapsed(program.slug)" class="program-details">
-        <ProgramDaysBoxes :program_id="program.id"/>
-        Notes: {{ program.body }}
+        <ProgramDaysBoxes :program_id="program.id" :allowAssignment="allowAssignment"/>
+        Notes: {{ program.notes }}
       </div>
     </div>
   </div>

@@ -3,23 +3,99 @@ import { useQuery } from '@vue/apollo-composable';
 import gql from 'graphql-tag';
 import { ref } from 'vue';
 import WorkoutDisplay from './WorkoutDisplay.vue';
+import { useUserStore } from "@/store/user";
+import { watch } from 'vue';
+
+const userStore = useUserStore();
+const username = userStore.getUser.username;
+
+const { result: workouts, loading, error } = useQuery(gql` 
+  query{
+    getLoggedWorkoutsByAthlete(athleteUsername: "${username}") {
+      assignedDate
+      workout{
+      id
+      }
+      notes
+    }
+  }`,
+  {
+    variables() {
+      return {
+        athleteUsername: username
+      };
+    }
+  }
+);
+
+const calendar = ref(null);
+
+/*content: change font color 
+  highlight: change background color
+  fillMode: light, dark, none
+  color: green, red, blue, yellow, orange, purple, pink, teal, cyan, lime, amber, brown, grey, white, black
+  dot: puts dot below date
+  POPOVER  can have a brief description of the workout (this is only helpful on desktop)
+  */
+  
+const date= ref();
+const workoutDates = workouts.value.getLoggedWorkoutsByAthlete.map(workout => new Date(workout.assignedDate));
+const attrs = ref([
+  {
+    key: 'today',
+    highlight: {
+      color: 'green',
+      fillMode: 'light',
+    },
+    dates: new Date()
+  },
+  ...workoutDates.map(date => ({
+    key: date.toISOString(),
+    dot: {
+      color: 'green',
+    },
+    dates: date,
+    popover: {
+      label: 'Workout assigned',
+    }
+  }))
+]);
 
 
-
+  
 
 </script> 
 
+<template>
 
-<template> 
-  <div class="main-content"> 
-    <h1> Today's Workout </h1>
+  <div class="calendar-container"> 
+    
+    {{ workouts }}
+    <VDatePicker 
+      ref="calendar" 
+      transparent 
+      borderless 
+      :color="'green'" 
+      v-model="date"
+      :attributes="attrs">
+      <template #footer>
+        <button> footer </button>
+      </template>
+    </VDatePicker>
   </div>
-</template> 
+ 
+</template>
 
-<style scoped> 
-.main-content{ 
-  border: 1px solid black;
-  margin: auto;
-}
-
+<style scoped>
+  * {
+    text-align: center;
+  }
+  
+  .wod-container {
+    border: 3px solid green;
+    margin: auto;
+    padding: 10px;
+    width: 50%;
+  }
 </style>
+

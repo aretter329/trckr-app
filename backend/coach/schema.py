@@ -282,13 +282,14 @@ class LogWorkout(graphene.Mutation):
         workout_id = graphene.ID(required=True)
         sets = graphene.List(LoggedSetInput)
         notes = graphene.String(required=False)
+        assigned_date = graphene.Date(required=False)
     
     logged_workout = graphene.Field(LoggedWorkoutType)
 
-    def mutate(self, info, athlete_username, notes, workout_id, sets):
+    def mutate(self, info, athlete_username, notes, workout_id, sets, assigned_date=None):  
         athlete = models.User.objects.get(username=athlete_username)
         workout = models.Workout.objects.get(id=workout_id)
-        logged_workout = models.LoggedWorkout(athlete=athlete, workout=workout, notes=notes)
+        logged_workout = models.LoggedWorkout(athlete=athlete, workout=workout, notes=notes, assigned_date=assigned_date)
         logged_workout.save()
         for set in sets:
             logged_set = models.LoggedSet(set=models.Set.objects.get(id=set.set_id), reps_completed=set.reps_completed, weight_completed=set.weight_completed, logged_workout=logged_workout)
@@ -327,6 +328,8 @@ class Query(graphene.ObjectType):
     programs_by_athlete = graphene.List(ProgramType, athlete_username=graphene.String())
     logged_workouts_by_athlete = graphene.List(LoggedWorkoutType, athlete_username=graphene.String())
     logged_sets_by_workout = graphene.List(LoggedSetType, workout_id=graphene.ID())
+    get_program_workouts = graphene.List(WorkoutType, program_id=graphene.ID())
+    get_logged_workouts_by_athlete = graphene.List(LoggedWorkoutType, athlete_username=graphene.String())
 
     def resolve_logged_workouts_by_athlete(root, info, athlete_username):
         athlete = models.User.objects.get(username=athlete_username)
@@ -395,6 +398,14 @@ class Query(graphene.ObjectType):
     def resolve_programs_by_athlete(root, info, athlete_username):
         athlete = models.User.objects.get(username=athlete_username)
         return models.Program.objects.filter(assigned_athletes=athlete)
+    
+    def resolve_get_program_workouts(root, info, program_id):
+        return models.Workout.objects.filter(day__program_id=program_id)
+    
+    def resolve_get_logged_workouts_by_athlete(root, info, athlete_username):
+        athlete = models.User.objects.get(username=athlete_username)
+        return models.LoggedWorkout.objects.filter(athlete=athlete)
+    
 
     
 schema = graphene.Schema(query=Query, mutation=Mutation)

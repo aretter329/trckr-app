@@ -5,7 +5,6 @@ import { useRouter } from "vue-router";
 import { ref } from "vue";
 import WODs from '../components/WODs.vue';
 
-const calendar = ref(null);
 const userStore = useUserStore();
 const router = useRouter();
 const user = ref({
@@ -22,20 +21,6 @@ const user = ref({
   POPOVER  can have a brief description of the workout (this is only helpful on desktop)
   */
 
-const date= ref();
-const attrs = ref([
-  { key: 'today', 
-    highlight: {
-      color: 'green', 
-      fillMode: 'light',
-    }, 
-    dates: new Date(),
-    popover: {
-      label: 'Today',
-    }
-  }
-    
-])
 
 onMounted(() => {
   if (!user.value.token) {
@@ -53,18 +38,7 @@ onMounted(() => {
 
   <div class="wod-container"> 
     <WODs />
-    {{ date }}
-    <VDatePicker 
-      ref="calendar" 
-      transparent 
-      borderless 
-      :color="'green'" 
-      v-model="date"
-      :attributes="attrs">
-      <template #footer>
-        <button> footer </button>
-      </template>
-    </VDatePicker>
+   
   </div>
  
 </template>

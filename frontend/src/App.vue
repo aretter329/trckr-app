@@ -4,6 +4,11 @@ import { useUserStore } from "@/store/user";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { onMounted } from "vue";
+import { provide } from 'vue'
+import { ApolloClients } from '@vue/apollo-composable'
+
+provide(ApolloClients)
+
 
 const router = useRouter();
 const userStore = useUserStore();

@@ -85,6 +85,7 @@ const { result: loggedWorkouts, loading2, error2 } = useQuery(gql`
       username
       }
       date
+      assignedDate
       notes
       id
       workout{

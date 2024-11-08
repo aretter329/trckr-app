@@ -207,12 +207,14 @@ export const ADD_ATHLETE = gql`
     $workoutId: ID!
     $sets: [LoggedSetInput]!
     $notes: String!
+    $assignedDate: Date!
   ) {
     logWorkout(
       athleteUsername: $athleteUsername
       workoutId: $workoutId
       sets: $sets
       notes: $notes
+      assignedDate: $assignedDate
     ) {
       loggedWorkout {
         id
