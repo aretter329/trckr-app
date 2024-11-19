@@ -4,23 +4,19 @@ import { onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { ref } from "vue";
 import WODs from '../components/WODs.vue';
+import { useQuery } from '@vue/apollo-composable';
+import gql from 'graphql-tag';
+import WorkoutDisplay from '../components/WorkoutDisplay.vue';
 
 const userStore = useUserStore();
+const name = userStore.getUser.firstName;
+const username = userStore.getUser.username;
 const router = useRouter();
 const user = ref({
   isAuthenticated: false, 
   token: userStore.getToken || "", 
   info: userStore.getUser || {}
 })
-
-/*content: change font color 
-  highlight: change background color
-  fillMode: light, dark, none
-  color: green, red, blue, yellow, orange, purple, pink, teal, cyan, lime, amber, brown, grey, white, black
-  dot: puts dot below date
-  POPOVER  can have a brief description of the workout (this is only helpful on desktop)
-  */
-
 
 onMounted(() => {
   if (!user.value.token) {
@@ -31,15 +27,60 @@ onMounted(() => {
   }
 });
 
+
+const formatDate = (date) => {
+  const d = new Date(date);
+  let month = '' + (d.getMonth() + 1);
+  let day = '' + d.getDate();
+  const year = d.getFullYear();
+
+  if (month.length < 2) 
+    month = '0' + month;
+  if (day.length < 2) 
+    day = '0' + day;
+
+  return [year, month, day].join('-');
+};
+
+const { result: workouts, loading, error } = useQuery(gql` 
+  query{
+    assignedWorkoutsByAthleteAndDate(athleteUsername: "${username}", assignedDate: "${formatDate(new Date())}") {
+      assignedDate
+      workout{
+        id
+        
+      }
+      notes
+      id
+    }
+  }`,
+  {
+    variables() {
+      return {
+        athleteUsername: username,
+        assignedDate: formatDate(new Date())
+      };
+    }
+  }
+);
+
 </script> 
 
 <template>
-  <h1> welcome to home page </h1>
+  <h1> Welcome, {{ name || username }}! </h1>
+   <div class='row'>
 
-  <div class="wod-container"> 
-    <WODs />
-   
-  </div>
+    <div class="centered-content"> 
+      <h2> Today's Workout </h2>
+      <div v-if="workouts && workouts.assignedWorkoutsByAthleteAndDate.length > 0">
+        <WorkoutDisplay :original_workout_id="workouts.assignedWorkoutsByAthleteAndDate[0].workout.id" :id="workouts.assignedWorkoutsByAthleteAndDate[0].id" />
+      </div>
+    </div>
+
+    <div class="wod-container"> 
+      <WODs />
+    </div>
+</div>
  
 </template>
 
@@ -49,9 +90,14 @@ onMounted(() => {
   }
   
   .wod-container {
-    border: 3px solid green;
     margin: auto;
     padding: 10px;
     width: 50%;
   }
+
+  .row{
+    display: flex;
+
+  }
+
 </style>

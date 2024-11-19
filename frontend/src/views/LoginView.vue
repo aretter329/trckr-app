@@ -1,21 +1,3 @@
-<template>
-  <div class="login"> 
-    <h2> Login </h2>
-    <form @submit.prevent="login">
-      <div> 
-        <label for="username"> Username </label>
-        <input v-model="username" type="text" id="username" name="username" required @input="resetError">
-      </div>
-      <div> 
-        <label for="password"> Password </label>
-        <input v-model="password" type="password" id="password" name="password" required @input="resetError">
-      </div>
-    <button type="submit"> Login </button>
-  </form>
-  <p v-if="error" class="error"> {{ error }} </p>
-  </div>
-</template>
-
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -35,10 +17,11 @@ const loginUser = useMutation(USER_SIGNIN, {
       username: username.value,
       password: password.value
     };
-  }
+  },
 });
 
 const login = async () => {
+  console.log('login');
   try {
     const user = await loginUser.mutate({
       username: username.value,
@@ -61,6 +44,32 @@ const resetError = () => {
 };
 */
 </script>
+
+<template>
+  
+  <div class="login"> 
+    <h2> Login </h2>
+    <div>
+      Need an account?
+      <button @click="router.push('/register')">Register</button>
+    </div>
+    <form @submit.prevent="login">
+      <div> 
+        <label for="username"> Username </label>
+        <input v-model="username" type="text" id="username" name="username" required @input="resetError">
+      </div>
+      <div> 
+        <label for="password"> Password </label>
+        <input v-model="password" type="password" id="password" name="password" required @input="resetError">
+      </div>
+    <button type="submit"> Login </button>
+  </form>
+  <p v-if="error" class="error"> {{ error }} </p>
+  </div>
+
+  
+</template>
+
 
 <style scoped>
 </style>

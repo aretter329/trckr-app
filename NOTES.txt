@@ -1,3 +1,6 @@
+BUGS--> 
+- athletes could still manually navigate to /all-athletes and /programs
+
 IDEAS: 
 - add detail to programs/workouts to assign days to them 
   - then can have 'today's workout' display on athlete page 

@@ -7,6 +7,8 @@ export const USER_SIGNUP = gql`
     $password: String!
     $isAthlete: Boolean!
     $isCoach: Boolean!
+    $firstName: String!
+    $lastName: String!
   ) {
     createUser(
       username: $username
@@ -14,6 +16,8 @@ export const USER_SIGNUP = gql`
       password: $password
       isAthlete: $isAthlete
       isCoach: $isCoach
+      firstName: $firstName
+      lastName: $lastName
     ) {
       user {
         id
@@ -35,6 +39,14 @@ export const USER_SIGNIN = gql`
       user {
         id
         username
+        isCoach
+        isAthlete
+        firstName
+        lastName
+        email
+        coach{
+          username
+        }
       }
     }
   }`;

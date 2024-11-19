@@ -10,6 +10,10 @@ const props = defineProps({
   original_workout: {
     type: Object,
     required: false
+  },
+  original_workout_id: {
+    type: String,
+    required: false
   }
 });
 
@@ -34,12 +38,42 @@ const { result: loggedSets, loading, error1} = useQuery(gql`
   }
 );
 
+const { result: originalWorkout, loading2, error2} = useQuery(gql` 
+  query{
+    workoutById(workoutId: "${props.original_workout_id}") {
+      id
+      blocks{
+        id
+        exercises{
+          id
+          name
+          description
+          sets{
+            id
+            reps
+            weight
+            number
+          }
+        }
+      }
+
+    }
+  }`,
+  {
+    variables() {
+      return {
+        workoutId: props.original_workout_id
+      };
+    }
+  }
+);
+
 </script> 
 
 <template> 
-  
-<div v-if="loggedSets" style="width: 100%">
-  <div v-for="block in original_workout.blocks" :key="block.id" class="p-block-div">
+
+<div v-if="originalWorkout" >
+  <div v-for="block in originalWorkout.workoutById.blocks" :key="block.id" class="p-block-div">
     <div v-for="exercise in block.exercises" :key="exercise.id" class="exercise-box">
       {{ exercise.name }} <br/>
       <div class="set-list">
@@ -63,6 +97,7 @@ const { result: loggedSets, loading, error1} = useQuery(gql`
   </div> 
 
 </div>
+
 </template> 
 
 <style scoped>

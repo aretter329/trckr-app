@@ -24,12 +24,23 @@ const logout = () => {
   router.push("/login");
 };
 
-onMounted(() => {
+/*onMounted(() => {
   if (!user.value.token) {
     router.push("/login");
   }
   else{
     user.value.isAuthenticated = true; 
+  }
+});
+*/
+import { watch } from "vue";
+
+watch(() => user.value.token, (newToken, oldToken) => {
+  if (!newToken) {
+    user.value.isAuthenticated = false;
+    router.push("/login");
+  } else {
+    user.value.isAuthenticated = true;
   }
 });
 
@@ -47,7 +58,7 @@ const showMenu = ref(false);
         <div v-if="showMenu" class="dropdown-menu">
           <RouterLink to="/profile">Profile</RouterLink>
           <RouterLink to="/settings">Settings</RouterLink>
-          <div @click="logout">Logout</div>
+          <RouterLink to="/login" @click="logout">Logout</RouterLink>
         </div>
       </div>
       <RouterLink to="/" :class="{ active: $route.path === '/'}">
@@ -55,12 +66,12 @@ const showMenu = ref(false);
           Home
         </div>
       </RouterLink>
-      <RouterLink to="/all-programs" :class="{ active: $route.path === '/all-programs'}">
+      <RouterLink v-if="user.info.isCoach" to="/all-programs" :class="{ active: $route.path === '/all-programs'}">
         <div class="nav-link">
           Programs
         </div>
       </RouterLink>
-      <RouterLink to="/athletes" :class="{ active: $route.path === '/athletes'}">
+      <RouterLink v-if="user.info.isCoach" to="/athletes" :class="{ active: $route.path === '/athletes'}">
         <div class="nav-link">
           Athletes
         </div>

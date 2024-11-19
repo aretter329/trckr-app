@@ -225,14 +225,18 @@ class CreateUser(graphene.Mutation):
         password = graphene.String(required=True)
         is_athlete = graphene.Boolean(required=True)
         is_coach = graphene.Boolean(required=True)
-        coach = graphene.String(required=False)  
+        coach = graphene.String(required=False)
+        first_name = graphene.String(required=True)
+        last_name = graphene.String(required=False)  
 
-    def mutate(self, info, username, email, password, is_coach, is_athlete, coach=None):  
+    def mutate(self, info, username, email, password, is_coach, is_athlete, first_name, last_name=None, coach=None):  
         user = models.User(
             username=username, 
             email=email,
             is_coach=is_coach,
-            is_athlete=is_athlete
+            is_athlete=is_athlete,
+            first_name=first_name,
+            last_name=last_name
         )
         user.set_password(password)
         if coach:
@@ -330,13 +334,12 @@ class Query(graphene.ObjectType):
     logged_sets_by_workout = graphene.List(LoggedSetType, workout_id=graphene.ID())
     get_program_workouts = graphene.List(WorkoutType, program_id=graphene.ID())
     get_logged_workouts_by_athlete = graphene.List(LoggedWorkoutType, athlete_username=graphene.String())
+    assigned_workouts_by_athlete_and_date = graphene.List(LoggedWorkoutType, athlete_username=graphene.String(), assigned_date=graphene.Date())
+    workout_by_id = graphene.Field(WorkoutType, workout_id=graphene.ID())
 
     def resolve_logged_workouts_by_athlete(root, info, athlete_username):
         athlete = models.User.objects.get(username=athlete_username)
         return models.LoggedWorkout.objects.filter(athlete=athlete)
-    
-    def resolve_logged_sets_by_workout(root, info, workout_id):
-        return models.LoggedSet.objects.filter(logged_workout__workout_id=workout_id)
     
     def resolve_logged_sets_by_workout(root, info, workout_id):
         return models.LoggedSet.objects.filter(logged_workout__id=workout_id)
@@ -406,6 +409,11 @@ class Query(graphene.ObjectType):
         athlete = models.User.objects.get(username=athlete_username)
         return models.LoggedWorkout.objects.filter(athlete=athlete)
     
-
+    def resolve_assigned_workouts_by_athlete_and_date(root, info, athlete_username, assigned_date):
+        athlete = models.User.objects.get(username=athlete_username)
+        return models.LoggedWorkout.objects.filter(athlete=athlete, assigned_date=assigned_date)
+    
+    def resolve_workout_by_id(root, info, workout_id):
+        return models.Workout.objects.get(id=workout_id)
     
 schema = graphene.Schema(query=Query, mutation=Mutation)

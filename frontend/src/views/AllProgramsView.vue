@@ -6,12 +6,14 @@ import { ref } from 'vue';
 import WriteProgram from "@/components/WriteProgram.vue";
 import { useUserStore } from "@/store/user";
 import LoggedWorkouts from "../components/LoggedWorkouts.vue";
+import { is } from "date-fns/locale";
 
 const tagName = ref('');
 const message = ref('');
 const writeProgram = ref(false);
 const userStore = useUserStore();
 const username = userStore.getUser.username;
+const is_coach = userStore.getUser.isCoach; 
 
 const { result: authoredPrograms, loading, error } = useQuery(gql` 
   query{
@@ -78,52 +80,6 @@ const { result: assignedPrograms, loading1, error1 } = useQuery(gql`
   }
 );
 
-const { result: loggedWorkouts, loading2, error2 } = useQuery(gql` 
-  query{
-    loggedWorkoutsByAthlete(athleteUsername: "${username}") {
-      athlete{
-      username
-      }
-      date
-      assignedDate
-      notes
-      id
-      workout{
-        id 
-        type
-        orderInDay
-        blocks{
-          id
-          name
-          orderInWorkout
-          exercises{
-            id
-            name
-            description 
-            orderInBlock
-            sets{
-              id
-              reps
-              weight
-              number
-            }
-          }
-        }
-      }
-    }
-  }`,
-  {
-    variables() {
-      return {
-        athleteUsername: username
-      };
-    }
-  }
-);
-
-
-
-
 // Use the mutation
 const createTag = useMutation(CREATE_TAG, {
   variables() {
@@ -153,37 +109,32 @@ const addTag = async () => {
 <template>
   <div class="container">
     <div style="width: 80%; display: flex; flex-direction: column; align-items: center;">
-      <button @click="writeProgram = !writeProgram">Write a Program</button>
       <div v-show="writeProgram" style="width: 100%">
         <WriteProgram/>
-      </div>
-      
-      <h2> Your Programs </h2>
-      <div v-if="loading">Loading...</div>
-      <div v-else-if="error" class="warn">{{ error }}</div>
-      <div v-else-if="authoredPrograms" style="width: 100%">
-      <ProgramList 
-        :programs="authoredPrograms.programsByAuthor" 
-        :showAuthor="false"
-        :allowAssignment="true"/>
+       </div>
+
+      <div v-if="is_coach" class="list-div">
+        <button @click="writeProgram = !writeProgram">Write a Program</button>
+        <div v-if="loading">Loading...</div>
+        <div v-else-if="error" class="warn">{{ error }}</div>
+        <div v-else-if="authoredPrograms" style="width: 100%">
+        <ProgramList 
+          :programs="authoredPrograms.programsByAuthor" 
+          :showAuthor="false"
+          :allowAssignment="true"/>
+        </div>
       </div>
 
-      <h2> Assigned to you </h2>
-      <div v-if="loading1">Loading...</div>
-      <div v-else-if="error1" class="warn">{{ error }}</div>
-      <div v-else-if="assignedPrograms" style="width: 100%">
-      <ProgramList 
-        :programs="assignedPrograms.programsByAthlete" 
-        :showAuthor="false"
-        :allowAssignment="false"/>
+      <div v-else class="list-div">
+        <div v-if="loading1">Loading...</div>
+        <div v-else-if="error1" class="warn">{{ error }}</div>
+        <div v-else-if="assignedPrograms" style="width: 100%">
+        <ProgramList 
+          :programs="assignedPrograms.programsByAthlete" 
+          :showAuthor="false"
+          :allowAssignment="false"/>
+        </div>
       </div>
-
-      <div v-if="loggedWorkouts" style="width: 100%">
-      <LoggedWorkouts 
-        :loggedWorkouts="loggedWorkouts.loggedWorkoutsByAthlete"
-      />
-      </div>
-
     </div>
   </div>
 </template>
@@ -193,6 +144,13 @@ const addTag = async () => {
   .container{
     display: flex; 
     flex-direction: column; 
+    align-items: center;
+  }
+
+  .list-div{ 
+    width: 100%;
+    display: flex; 
+    flex-direction: column;
     align-items: center;
   }
 </style>

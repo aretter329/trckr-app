@@ -47,7 +47,7 @@ const { result, loading, error } = useQuery(gql`
   {
     variables() {
       return {
-        username: userStore.getUser.username
+        coachUsername: userStore.getUser.username
       };
     }
   }
@@ -66,9 +66,9 @@ const { result, loading, error } = useQuery(gql`
   <h2> Your atheltes </h2>
 
   <div v-if="result && result.allAthletesByCoach">
-  <div v-for="athlete in result.allAthletesByCoach" :key="athlete.id">
-    {{ athlete.username }}
-  </div>
+    <div v-for="athlete in result.allAthletesByCoach" :key="athlete.id">
+      {{ athlete.username }}
+    </div>
   </div>
 
 </template>

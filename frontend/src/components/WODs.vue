@@ -8,6 +8,7 @@ import { watch } from 'vue';
 
 const userStore = useUserStore();
 const username = userStore.getUser.username;
+const user = userStore.getUser;
 
 const { result: workouts, loading, error } = useQuery(gql` 
   query{
@@ -28,6 +29,7 @@ const { result: workouts, loading, error } = useQuery(gql`
   }
 );
 
+
 const calendar = ref(null);
 
 /*content: change font color 
@@ -39,28 +41,40 @@ const calendar = ref(null);
   */
   
 const date= ref();
-const workoutDates = workouts.value.getLoggedWorkoutsByAthlete.map(workout => new Date(workout.assignedDate));
-const attrs = ref([
-  {
-    key: 'today',
-    highlight: {
-      color: 'green',
-      fillMode: 'light',
-    },
-    dates: new Date()
-  },
-  ...workoutDates.map(date => ({
-    key: date.toISOString(),
-    dot: {
-      color: 'green',
-    },
-    dates: date,
-    popover: {
-      label: 'Workout assigned',
-    }
-  }))
-]);
+const attrs = ref([]);
 
+
+watch(workouts, (newWorkouts) => {
+  console.log('here')
+  if (newWorkouts) {
+    const workoutDates = newWorkouts.getLoggedWorkoutsByAthlete.map(workout => {
+      const date = new Date(workout.assignedDate);
+      date.setHours(date.getHours() + 5);
+      return date;
+    });
+    console.log(workoutDates);
+    attrs.value = [
+      {
+        key: 'today',
+        highlight: {
+          color: 'green',
+          fillMode: 'light',
+        },
+        dates: new Date()
+      },
+      ...workoutDates.map(date => ({
+        key: date.toISOString(),
+        dot: {
+          color: 'green',
+        },
+        dates: date,
+        popover: {
+          label: 'Workout assigned',
+        }
+      }))
+    ];
+  }
+});
 
   
 
@@ -68,19 +82,15 @@ const attrs = ref([
 
 <template>
 
-  <div class="calendar-container"> 
-    
-    {{ workouts }}
-    <VDatePicker 
+  <div v-if="workouts" class="calendar-container"> 
+        <VDatePicker 
       ref="calendar" 
       transparent 
       borderless 
       :color="'green'" 
       v-model="date"
       :attributes="attrs">
-      <template #footer>
-        <button> footer </button>
-      </template>
+      
     </VDatePicker>
   </div>
  
@@ -92,7 +102,6 @@ const attrs = ref([
   }
   
   .wod-container {
-    border: 3px solid green;
     margin: auto;
     padding: 10px;
     width: 50%;
