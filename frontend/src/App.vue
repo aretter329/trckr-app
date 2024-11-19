@@ -8,7 +8,7 @@ import { provide } from 'vue'
 import { ApolloClients } from '@vue/apollo-composable'
 
 provide(ApolloClients)
-
+//localStorage.clear()
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -19,6 +19,7 @@ const user = ref({
 })
 
 const logout = () => {
+  console.log('logout');
   userStore.removeToken();
   userStore.removeUser();
   router.push("/login");
@@ -36,7 +37,8 @@ const logout = () => {
 import { watch } from "vue";
 
 watch(() => user.value.token, (newToken, oldToken) => {
-  if (!newToken) {
+  console.log('token changed');
+  if (!user.value.token) {
     user.value.isAuthenticated = false;
     router.push("/login");
   } else {

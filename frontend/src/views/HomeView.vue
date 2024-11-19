@@ -6,7 +6,6 @@ import { ref } from "vue";
 import WODs from '../components/WODs.vue';
 import { useQuery } from '@vue/apollo-composable';
 import gql from 'graphql-tag';
-import WorkoutDisplay from '../components/WorkoutDisplay.vue';
 
 const userStore = useUserStore();
 const name = userStore.getUser.firstName;
@@ -17,6 +16,12 @@ const user = ref({
   token: userStore.getToken || "", 
   info: userStore.getUser || {}
 })
+const selectedDate = ref(new Date());
+
+const handleDate = (newDate) => {
+  console.log('new date', newDate);
+  selectedDate.value = newDate;
+};
 
 onMounted(() => {
   if (!user.value.token) {
@@ -70,15 +75,19 @@ const { result: workouts, loading, error } = useQuery(gql`
   <h1> Welcome, {{ name || username }}! </h1>
    <div class='row'>
 
+
+    <!--
     <div class="centered-content"> 
-      <h2> Today's Workout </h2>
       <div v-if="workouts && workouts.assignedWorkoutsByAthleteAndDate.length > 0">
-        <WorkoutDisplay :original_workout_id="workouts.assignedWorkoutsByAthleteAndDate[0].workout.id" :id="workouts.assignedWorkoutsByAthleteAndDate[0].id" />
+      <WorkoutDisplay :original_workout_id="workouts.assignedWorkoutsByAthleteAndDate[0].workout.id" 
+              :id="workouts.assignedWorkoutsByAthleteAndDate[0].id" 
+              />
       </div>
     </div>
+    -->
 
     <div class="wod-container"> 
-      <WODs />
+      <WODs @update-date="handleDate"/>
     </div>
 </div>
  

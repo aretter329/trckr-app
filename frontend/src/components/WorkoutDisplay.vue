@@ -1,6 +1,8 @@
 <script setup> 
 import { useQuery } from '@vue/apollo-composable';
 import gql from 'graphql-tag';
+import { defineProps, ref, watch } from 'vue';
+
 
 const props = defineProps({
   id: {
@@ -38,7 +40,7 @@ const { result: loggedSets, loading, error1} = useQuery(gql`
   }
 );
 
-const { result: originalWorkout, loading2, error2} = useQuery(gql` 
+const { result: originalWorkout } = useQuery(gql` 
   query{
     workoutById(workoutId: "${props.original_workout_id}") {
       id
@@ -68,11 +70,20 @@ const { result: originalWorkout, loading2, error2} = useQuery(gql`
   }
 );
 
+watch(() => props.id, () => {
+  console.log('refetch')
+});
+
+watch(() => props.original_workout_id, () => {
+
+});
+
 </script> 
 
 <template> 
 
-<div v-if="originalWorkout" >
+
+<div v-if="originalWorkout && loggedSets" >
   <div v-for="block in originalWorkout.workoutById.blocks" :key="block.id" class="p-block-div">
     <div v-for="exercise in block.exercises" :key="exercise.id" class="exercise-box">
       {{ exercise.name }} <br/>
@@ -81,6 +92,7 @@ const { result: originalWorkout, loading2, error2} = useQuery(gql`
           <tr>
             <td> Weight </td>
             <td v-for="set, index in exercise.sets" :key="index">
+              
                {{ loggedSets.loggedSetsByWorkout.find(loggedSet => loggedSet.set.id === set.id).weightCompleted }}
             </td>
           </tr>
