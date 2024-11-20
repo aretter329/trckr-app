@@ -236,3 +236,39 @@ export const ADD_ATHLETE = gql`
       }
     }
   }`;
+
+  export const CREATE_WORKOUT_GROUP = gql`
+  mutation (
+    $name: String!
+    $coach: String!
+  ) {
+    createWorkoutGroup(
+      name: $name
+      coach: $coach
+    ) {
+      workoutGroup {
+        id
+        name
+        coach{
+          username
+        }
+      }
+    }
+  }`;
+
+  export const ADD_ATHLETE_TO_GROUP = gql`
+  mutation (
+    $athleteId: ID!
+    $groupId: ID!
+  ) {
+    addAthleteToGroup(
+      athleteId: $athleteId
+      groupId: $groupId
+    ) {
+      group {
+        athletes{
+          username
+        }
+      }
+    }
+  }`;

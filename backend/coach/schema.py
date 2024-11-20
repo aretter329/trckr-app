@@ -16,6 +16,10 @@ class ProgramType(DjangoObjectType):
     class Meta:
         model = models.Program
 
+class WorkoutGroupType(DjangoObjectType):
+    class Meta:
+        model = models.WorkoutGroup
+
 class TagType(DjangoObjectType):
     class Meta:
         model = models.Tag
@@ -173,6 +177,22 @@ class CreateWorkout(graphene.Mutation):
         )
         workout.save()
         return CreateWorkout(workout=workout)
+    
+class CreateWorkoutGroup(graphene.Mutation):
+    workout_group = graphene.Field(WorkoutGroupType)
+
+    class Arguments:
+        name = graphene.String(required=True)
+        coach = graphene.String(required=True)
+
+    def mutate(self, info, name, coach):
+        coach = models.User.objects.get(username=coach)
+        workout_group = models.WorkoutGroup(
+            name=name,
+            coach=coach
+        )
+        workout_group.save()
+        return CreateWorkoutGroup(workout_group=workout_group)
 
 class CreateExercise(graphene.Mutation):
     exercise = graphene.Field(ExerciseType)
@@ -299,12 +319,27 @@ class LogWorkout(graphene.Mutation):
             logged_set = models.LoggedSet(set=models.Set.objects.get(id=set.set_id), reps_completed=set.reps_completed, weight_completed=set.weight_completed, logged_workout=logged_workout)
             logged_set.save()
         return LogWorkout(logged_workout=logged_workout)
+    
+class AddAthleteToGroup(graphene.Mutation):
+    class Arguments:
+        athlete_id = graphene.ID(required=True)
+        group_id = graphene.ID(required=True)
+    
+    group = graphene.Field(WorkoutGroupType)
+    
+    def mutate(self, info, athlete_id, group_id):
+        athlete = models.User.objects.get(id=athlete_id)
+        group = models.WorkoutGroup.objects.get(id=group_id)
+        group.athletes.add(athlete)
+        group.save()
+        return AddAthleteToGroup(group=group)
 
     
 class Mutation(graphene.ObjectType):
     create_tag = CreateTag.Field()
     create_program = CreateProgram.Field()
     create_user = CreateUser.Field()
+    create_workout_group = CreateWorkoutGroup.Field()
     token_auth = ObtainJSONWebToken.Field()
     verify_token = graphql_jwt.Verify.Field()
     refresh_token = graphql_jwt.Refresh.Field()
@@ -315,6 +350,8 @@ class Mutation(graphene.ObjectType):
     add_athlete = AddAthlete.Field()
     assign_program = AssignProgram.Field()
     log_workout = LogWorkout.Field()
+    add_athlete_to_group = AddAthleteToGroup.Field()  
+    
 
 class Query(graphene.ObjectType):
     all_programs = graphene.List(ProgramType)
@@ -336,6 +373,7 @@ class Query(graphene.ObjectType):
     get_logged_workouts_by_athlete = graphene.List(LoggedWorkoutType, athlete_username=graphene.String())
     assigned_workouts_by_athlete_and_date = graphene.List(LoggedWorkoutType, athlete_username=graphene.String(), assigned_date=graphene.Date())
     workout_by_id = graphene.Field(WorkoutType, workout_id=graphene.ID())
+    groups_by_coach = graphene.List(WorkoutGroupType, coach=graphene.String())
 
     def resolve_logged_workouts_by_athlete(root, info, athlete_username):
         athlete = models.User.objects.get(username=athlete_username)
@@ -415,5 +453,9 @@ class Query(graphene.ObjectType):
     
     def resolve_workout_by_id(root, info, workout_id):
         return models.Workout.objects.get(id=workout_id)
+    
+    def resolve_groups_by_coach(root, info, coach):
+        return models.WorkoutGroup.objects.filter(coach__username=coach)
+    
     
 schema = graphene.Schema(query=Query, mutation=Mutation)
