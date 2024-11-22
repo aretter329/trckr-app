@@ -23,12 +23,10 @@ const date= ref(new Date());
 const attrs = ref([]);
 const selectedWorkouts = computed(() => {
   if (date.value === null || attrs.value == []) {
-    console.log('nulls')
     return [];
   }
   const dateInfo = attrs.value.filter(attr => attr.dates.toDateString() === date.value.toDateString());
   if (!dateInfo.some(attr => attr.popover)) {
-    console.log('none today')
     return [];
   }
   return [dateInfo[0].popover.content];
@@ -61,7 +59,6 @@ const { result: workouts, loading, error } = useQuery(gql`
 
 
 watch(workouts, (newWorkouts) => {
-  console.log('here')
   if (newWorkouts) {
     const workoutDates = newWorkouts.getLoggedWorkoutsByAthlete.map(workout => {
       const date = new Date(workout.assignedDate);
@@ -71,7 +68,6 @@ watch(workouts, (newWorkouts) => {
         workout
       };
     });
-    console.log(workoutDates);
     attrs.value = [
       {
         key: 'today',
@@ -98,7 +94,6 @@ watch(workouts, (newWorkouts) => {
 });
 
 const handleDate = (date) => {
-  console.log(date);
 };  
 
 </script> 
@@ -123,6 +118,10 @@ const handleDate = (date) => {
           :id="selectedWorkouts[0].id" 
           :key="selectedWorkouts[0].id"
         />
+
+        <RouterLink :to="{ name: 'workout', params: { workoutId: selectedWorkouts[0].id } }">
+          View workout
+        </RouterLink>
       </div>
       <div v-else>
         No workout assigned 

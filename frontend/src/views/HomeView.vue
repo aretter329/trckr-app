@@ -19,7 +19,6 @@ const user = ref({
 const selectedDate = ref(new Date());
 
 const handleDate = (newDate) => {
-  console.log('new date', newDate);
   selectedDate.value = newDate;
 };
 

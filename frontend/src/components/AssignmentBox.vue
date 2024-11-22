@@ -66,7 +66,7 @@ function assignToAthletes() {
         )
       ).flat(2);
       selectedAthletes.value.forEach(username => {
-        console.log('assigning workout on', assigned_date, 'to', username);
+        console.log('assigning sets', sets);
         logWorkout(username, assigned_date, workout.id, sets);
       });
     });

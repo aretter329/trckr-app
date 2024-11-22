@@ -16,7 +16,7 @@ const props = defineProps({
   original_workout_id: {
     type: String,
     required: false
-  }
+  },
 });
 
 const { result: loggedSets, loading, error1} = useQuery(gql` 
@@ -81,8 +81,6 @@ watch(() => props.original_workout_id, () => {
 </script> 
 
 <template> 
-
-
 <div v-if="originalWorkout && loggedSets" >
   <div v-for="block in originalWorkout.workoutById.blocks" :key="block.id" class="p-block-div">
     <div v-for="exercise in block.exercises" :key="exercise.id" class="exercise-box">
@@ -92,7 +90,8 @@ watch(() => props.original_workout_id, () => {
           <tr>
             <td> Weight </td>
             <td v-for="set, index in exercise.sets" :key="index">
-              
+              {{ set }}
+              <input type="number" v-model="currentSets[set.id].weightCompleted" />
                {{ loggedSets.loggedSetsByWorkout.find(loggedSet => loggedSet.set.id === set.id).weightCompleted }}
             </td>
           </tr>

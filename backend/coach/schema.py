@@ -333,6 +333,22 @@ class AddAthleteToGroup(graphene.Mutation):
         group.athletes.add(athlete)
         group.save()
         return AddAthleteToGroup(group=group)
+    
+class UpdateLoggedSets(graphene.Mutation):
+    class Arguments:
+        logged_sets = graphene.List(LoggedSetInput)
+        logged_workout_id = graphene.ID(required=True)
+    
+    logged_workout = graphene.Field(LoggedWorkoutType)
+    
+    def mutate(self, info, logged_sets, logged_workout_id):
+        logged_workout = models.LoggedWorkout.objects.get(id=logged_workout_id)
+        for set in logged_sets:
+            logged_set = models.LoggedSet.objects.get(id=set.set_id)
+            logged_set.reps_completed = set.reps_completed
+            logged_set.weight_completed = set.weight_completed
+            logged_set.save()
+        return UpdateLoggedSets(logged_workout=logged_workout)
 
     
 class Mutation(graphene.ObjectType):
@@ -351,6 +367,7 @@ class Mutation(graphene.ObjectType):
     assign_program = AssignProgram.Field()
     log_workout = LogWorkout.Field()
     add_athlete_to_group = AddAthleteToGroup.Field()  
+    update_logged_sets = UpdateLoggedSets.Field()
     
 
 class Query(graphene.ObjectType):
@@ -374,6 +391,7 @@ class Query(graphene.ObjectType):
     assigned_workouts_by_athlete_and_date = graphene.List(LoggedWorkoutType, athlete_username=graphene.String(), assigned_date=graphene.Date())
     workout_by_id = graphene.Field(WorkoutType, workout_id=graphene.ID())
     groups_by_coach = graphene.List(WorkoutGroupType, coach=graphene.String())
+    logged_workout_by_id = graphene.Field(LoggedWorkoutType, logged_workout_id=graphene.ID())
 
     def resolve_logged_workouts_by_athlete(root, info, athlete_username):
         athlete = models.User.objects.get(username=athlete_username)
@@ -456,6 +474,9 @@ class Query(graphene.ObjectType):
     
     def resolve_groups_by_coach(root, info, coach):
         return models.WorkoutGroup.objects.filter(coach__username=coach)
+    
+    def resolve_logged_workout_by_id(root, info, logged_workout_id):
+        return models.LoggedWorkout.objects.get(id=logged_workout_id)
     
     
 schema = graphene.Schema(query=Query, mutation=Mutation)

@@ -95,6 +95,7 @@ const confirmGroupSelection = async (athleteId) => {
   catch (error) {
     console.error(error);
   }
+  showGroupOptions.value[athleteId] = false;
 };
 
 const addAthleteToGroupMutation = useMutation(ADD_ATHLETE_TO_GROUP);
@@ -161,6 +162,8 @@ const createNewGroupMutation = useMutation(CREATE_WORKOUT_GROUP, {
   </div>
 
   <h2> All atheltes </h2>
+
+  {{  showGroupOptions }}
 
   <div v-if="result && result.allAthletesByCoach && groups && groups.groupsByCoach">
     <div v-for="athlete in result.allAthletesByCoach" :key="athlete.id">

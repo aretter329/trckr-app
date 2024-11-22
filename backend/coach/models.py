@@ -72,6 +72,15 @@ class Set(models.Model):
     def __str__(self):
         return f'{self.reps} @ {self.weight}'
     
+class WorkoutGroup(models.Model):
+    coach = models.ForeignKey(User, on_delete=models.CASCADE, related_name='coached_workout_groups')
+    name = models.CharField(max_length=255)
+    athletes = models.ManyToManyField(User, related_name='athlete_workout_groups', blank=True)
+
+    def __str__(self):
+        return self.name
+    
+
 class LoggedWorkout(models.Model):
     athlete = models.ForeignKey(User, on_delete=models.CASCADE, related_name='logged_workouts')
     assigned_date = models.DateTimeField()
@@ -92,12 +101,4 @@ class LoggedSet(models.Model):
     
     def __str__(self):
         return f'{self.set} {self.reps_completed} @ {self.weight_completed}'
-    
-class WorkoutGroup(models.Model):
-    coach = models.ForeignKey(User, on_delete=models.CASCADE, related_name='coached_workout_groups')
-    name = models.CharField(max_length=255)
-    athletes = models.ManyToManyField(User, related_name='athlete_workout_groups', blank=True)
-
-    def __str__(self):
-        return self.name
-    
+ 

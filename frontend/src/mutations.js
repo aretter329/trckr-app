@@ -272,3 +272,20 @@ export const ADD_ATHLETE = gql`
       }
     }
   }`;
+
+
+  export const UPDATE_LOGGED_SETS = gql`
+  mutation (
+    $loggedWorkoutId: ID!
+    $loggedSets: [LoggedSetInput]!
+  ) {
+    updateLoggedSets(
+      loggedWorkoutId: $loggedWorkoutId
+      loggedSets: $loggedSets
+    ) {
+      loggedWorkout {
+        id
+      }
+      
+    }
+  }`;

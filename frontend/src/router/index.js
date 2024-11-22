@@ -8,7 +8,8 @@ import RegisterView from "../views/RegisterView.vue";
 import HomeView from "../views/HomeView.vue";
 import AthletesView from "../views/AthletesView.vue";
 import ProfileView from "../views/ProfileView.vue";
-import SettingsView from "../views/SettingsView.vue"; 
+import SettingsView from "../views/SettingsView.vue";
+import WorkoutView from "../views/WorkoutView.vue"; 
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -62,6 +63,12 @@ const router = createRouter({
       path: "/settings",
       name: "settings",
       component: SettingsView,
+    },
+    {
+      path: "/workout/:workoutId",
+      name: "workout",
+      component: WorkoutView,
+      props: true,
     }
 
   ],
