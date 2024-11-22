@@ -95,8 +95,8 @@ class LoggedWorkout(models.Model):
 
 class LoggedSet(models.Model):
     set = models.ForeignKey(Set, on_delete=models.CASCADE, related_name='logged_sets')
-    reps_completed = models.IntegerField()
-    weight_completed = models.IntegerField()
+    reps_completed = models.IntegerField(null=True, blank=True)
+    weight_completed = models.IntegerField(null=True, blank=True)
     logged_workout = models.ForeignKey(LoggedWorkout, on_delete=models.CASCADE, related_name='logged_sets')
     
     def __str__(self):

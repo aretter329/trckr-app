@@ -59,9 +59,7 @@ function assignToAthletes() {
       let sets = workout.blocks.map(block => 
         block.exercises.map(exercise => 
           exercise.sets.map(set => ({
-        setId: set.id,
-        repsCompleted: -1,
-        weightCompleted: -1
+            setId: set.id,
           }))
         )
       ).flat(2);

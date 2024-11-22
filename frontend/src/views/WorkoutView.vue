@@ -1,20 +1,16 @@
 <script setup>
 import { ref, watchEffect } from 'vue';
-import { useRouter } from 'vue-router';
-import { useUserStore } from '@/store/user';
 import { useMutation, useQuery } from "@vue/apollo-composable";
 import gql from 'graphql-tag';
 import { UPDATE_LOGGED_SETS } from '@/mutations';
 
-const userStore = useUserStore();
-const router = useRouter();
 const currentSets = ref([]);
 
 const props = defineProps({
   workoutId: String
 })
 
-const { result: workout, loading, error } = useQuery(gql`
+const { result: workout } = useQuery(gql`
   query {
     loggedWorkoutById(loggedWorkoutId: "${props.workoutId}") {
       athlete{
@@ -74,13 +70,12 @@ const { result: loggedSets } = useQuery(gql`
 
 watchEffect(() => {
   if (loggedSets.value) {
-    //currentSets.value = JSON.parse(JSON.stringify(loggedSets.value.loggedSetsByWorkout || []));
-  currentSets.value = loggedSets.value.loggedSetsByWorkout.map(set => ({
-    setId: set.id,
-    repsCompleted: set.repsCompleted,
-    weightCompleted: set.weightCompleted,
-    original_set_id: set.set.id
-  }));
+    currentSets.value = loggedSets.value.loggedSetsByWorkout.map(set => ({
+      setId: set.id,
+      repsCompleted: set.repsCompleted,
+      weightCompleted: set.weightCompleted,
+      original_set_id: set.set.id
+    }));
   }
 });
 
@@ -131,7 +126,6 @@ const updateLoggedSets = async () => {
         </div>
       </div>
     </div>
-
     <button @click="updateLoggedSets"> save workout </button>
   </div>
 

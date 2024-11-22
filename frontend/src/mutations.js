@@ -83,102 +83,6 @@ export const ADD_PROGRAM = gql`
     }
     
   }`;
-      
-export const ADD_WORKOUT = gql`
-  mutation (
-    $type: String!
-    $orderInDay: Int!
-    $dayId: ID!
-  ) {
-    createWorkout(
-      type: $type
-      orderInDay: $orderInDay
-      dayId: $dayId
-    ) {
-      workout {
-        id
-        type
-        orderInDay
-        day {
-          id
-        }
-      }
-    }
-  }`;
-
-export const ADD_DAY = gql`
-  mutation (
-    $name: String!
-    $orderInProgram: Int!
-    $programId: ID!
-  ) {
-    createDay(
-      name: $name
-      orderInProgram: $orderInProgram
-      programId: $programId
-    ) {
-      day {
-        id
-        name
-        orderInProgram
-        program {
-          id
-        }
-      }
-    }
-  }`;
-
-
-export const ADD_EXERCISE = gql`
-  mutation (
-    $name: String!
-    $description: String!
-    $block: Int!
-    $workoutId: ID!
-  ) {
-    createExercise(
-      name: $name
-      description: $description
-      block: $block
-      workoutId: $workoutId
-    ) {
-      exercise {
-        id
-        name
-        description
-        block
-        workout {
-        id
-        }
-      }
-    }
-  }`;
-
-export const ADD_SET = gql`
-  mutation (
-    $reps: Int!
-    $weight: Int!
-    $number: Int!
-    $exerciseId: ID!
-  ) {
-    createSet(
-      reps: $reps
-      weight: $weight
-      number: $number
-      exerciseId: $exerciseId
-    ) {
-      set {
-        id
-        reps
-        weight
-        number
-        exercise {
-          id
-        }
-      }
-    }
-  }`;
-
 
 export const ADD_ATHLETE = gql`
   mutation (
@@ -272,7 +176,6 @@ export const ADD_ATHLETE = gql`
       }
     }
   }`;
-
 
   export const UPDATE_LOGGED_SETS = gql`
   mutation (

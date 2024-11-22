@@ -1,10 +1,7 @@
 <script setup>
-import { RouterLink, RouterView } from "vue-router";
+import { RouterLink, RouterView, useRouter } from "vue-router";
 import { useUserStore } from "@/store/user";
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import { onMounted } from "vue";
-import { provide } from 'vue'
+import { ref, watch, computed, provide } from "vue";
 import { ApolloClients } from '@vue/apollo-composable'
 
 provide(ApolloClients)
@@ -12,11 +9,13 @@ provide(ApolloClients)
 
 const router = useRouter();
 const userStore = useUserStore();
-const user = ref({
-  isAuthenticated: false, 
-  token: userStore.getToken || "", 
-  info: userStore.getUser || {}
-})
+const showMenu = ref(false);
+
+const user = computed(() => ({
+  isAuthenticated: !!userStore.getToken,
+  token: userStore.getToken,
+  info: userStore.getUser
+}));
 
 const logout = () => {
   console.log('logout');
@@ -25,16 +24,7 @@ const logout = () => {
   router.push("/login");
 };
 
-/*onMounted(() => {
-  if (!user.value.token) {
-    router.push("/login");
-  }
-  else{
-    user.value.isAuthenticated = true; 
-  }
-});
-*/
-import { watch } from "vue";
+
 
 watch(() => user.value.token, (newToken, oldToken) => {
   console.log('token changed');
@@ -47,37 +37,49 @@ watch(() => user.value.token, (newToken, oldToken) => {
 });
 
 
-
-const showMenu = ref(false);
 </script>
 
 <template>
   
   <header>
     <nav>
-      <div v-if="user.isAuthenticated" @mouseover="showMenu = true" @mouseleave="showMenu = false">
-        {{ userStore.getUser.username }}
-        <div v-if="showMenu" class="dropdown-menu">
-          <RouterLink to="/profile">Profile</RouterLink>
-          <RouterLink to="/settings">Settings</RouterLink>
-          <RouterLink to="/login" @click="logout">Logout</RouterLink>
+      <div v-if="user.isAuthenticated" style="display: flex">
+        <div @mouseover="showMenu = true" @mouseleave="showMenu = false">
+          {{ userStore.getUser.username }}
+          <div v-if="showMenu" class="dropdown-menu">
+            <RouterLink to="/profile">Profile</RouterLink>
+            <RouterLink to="/settings">Settings</RouterLink>
+            <RouterLink to="/login" @click="logout">Logout</RouterLink>
+          </div>
         </div>
+        <RouterLink to="/" :class="{ active: $route.path === '/'}">
+          <div class="nav-link">
+            Home
+          </div>
+        </RouterLink>
+        <RouterLink v-if="user.info.isCoach" to="/all-programs" :class="{ active: $route.path === '/all-programs'}">
+          <div class="nav-link">
+            Programs
+          </div>
+        </RouterLink>
+        <RouterLink v-if="user.info.isCoach" to="/athletes" :class="{ active: $route.path === '/athletes'}">
+          <div class="nav-link">
+            Athletes
+          </div>
+        </RouterLink>
       </div>
-      <RouterLink to="/" :class="{ active: $route.path === '/'}">
-        <div class="nav-link">
-          Home
-        </div>
-      </RouterLink>
-      <RouterLink v-if="user.info.isCoach" to="/all-programs" :class="{ active: $route.path === '/all-programs'}">
-        <div class="nav-link">
-          Programs
-        </div>
-      </RouterLink>
-      <RouterLink v-if="user.info.isCoach" to="/athletes" :class="{ active: $route.path === '/athletes'}">
-        <div class="nav-link">
-          Athletes
-        </div>
-      </RouterLink>
+      <div v-else style="display:flex">
+        <RouterLink to="/login" :class="{ active: $route.path === '/login'}">
+          <div class="nav-link">
+            Login
+          </div>
+        </RouterLink>
+        <RouterLink to="/register" :class="{ active: $route.path === '/register'}">
+          <div class="nav-link">
+            Register
+          </div>
+        </RouterLink>
+      </div>
 
     </nav>
   </header>

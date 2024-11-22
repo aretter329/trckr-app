@@ -5,8 +5,6 @@ import gql from "graphql-tag";
 import { ref } from 'vue';
 import WriteProgram from "@/components/WriteProgram.vue";
 import { useUserStore } from "@/store/user";
-import LoggedWorkouts from "../components/LoggedWorkouts.vue";
-import { is } from "date-fns/locale";
 
 const tagName = ref('');
 const message = ref('');
@@ -53,33 +51,6 @@ const CREATE_TAG = gql`
   }
 `;
 
-const { result: assignedPrograms, loading1, error1 } = useQuery(gql` 
-  query{
-    programsByAthlete(athleteUsername: "${username}") {
-      title
-      slug
-      dateCreated
-      notes
-      id
-      tags {
-        name
-      }
-      author {
-        username
-        firstName
-        lastName
-      }
-    }
-  }`,
-  {
-    variables() {
-      return {
-        athleteUsername: username
-      };
-    }
-  }
-);
-
 // Use the mutation
 const createTag = useMutation(CREATE_TAG, {
   variables() {
@@ -122,17 +93,6 @@ const addTag = async () => {
           :programs="authoredPrograms.programsByAuthor" 
           :showAuthor="false"
           :allowAssignment="true"/>
-        </div>
-      </div>
-
-      <div v-else class="list-div">
-        <div v-if="loading1">Loading...</div>
-        <div v-else-if="error1" class="warn">{{ error }}</div>
-        <div v-else-if="assignedPrograms" style="width: 100%">
-        <ProgramList 
-          :programs="assignedPrograms.programsByAthlete" 
-          :showAuthor="false"
-          :allowAssignment="false"/>
         </div>
       </div>
     </div>

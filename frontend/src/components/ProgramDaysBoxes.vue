@@ -1,8 +1,6 @@
 <script setup> 
 import { useQuery } from '@vue/apollo-composable';
 import gql from 'graphql-tag';
-import WorkoutModal from './WorkoutModal.vue';
-import { useMutation } from "@vue/apollo-composable";
 import { useUserStore } from "@/store/user";
 import AssignmentBox from './AssignmentBox.vue';
 import { ref } from 'vue';

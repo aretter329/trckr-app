@@ -1,5 +1,4 @@
 <script setup>
-import AuthorLink from "./AuthorLink.vue";
 import { defineProps, ref } from "vue";
 import ProgramDaysBoxes from "./ProgramDaysBoxes.vue";
 import { useMutation } from "@vue/apollo-composable";
@@ -78,9 +77,6 @@ function toggleCollapse(slug, id) {
           {{ !isCollapsed(program.slug) ? 'Show Details' : 'Hide Details' }}
         </button>
 
-        <div v-if="showAuthor" class="program-author">
-          <AuthorLink :author="program.author" />
-        </div>
       </div>
       <div v-if="isCollapsed(program.slug)" class="program-details">
         <ProgramDaysBoxes :program_id="program.id" :allowAssignment="allowAssignment"/>

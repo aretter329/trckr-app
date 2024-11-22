@@ -38,16 +38,11 @@ const login = async () => {
   }
 };
 
-/*
-const resetError = () => {
-  error.value = '';
-};
-*/
 </script>
 
 <template>
   
-  <div class="login"> 
+  <div class="login centered-content"> 
     <h2> Login </h2>
     <div>
       Need an account?

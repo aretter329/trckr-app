@@ -2,10 +2,12 @@
 import { useQuery } from '@vue/apollo-composable';
 import gql from 'graphql-tag';
 import { computed, ref } from 'vue';
-import WorkoutDisplay from './WorkoutDisplay.vue';
 import { useUserStore } from "@/store/user";
-import { watch } from 'vue';
+import { watch, watchEffect } from 'vue';
 import { defineEmits } from 'vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 const userStore = useUserStore();
 const username = userStore.getUser.username;
 const user = userStore.getUser;
@@ -43,7 +45,7 @@ const { result: workouts, loading, error } = useQuery(gql`
       assignedDate
       id
       workout{
-      id
+        id
       }
       notes
     }
@@ -57,8 +59,8 @@ const { result: workouts, loading, error } = useQuery(gql`
   }
 );
 
-
-watch(workouts, (newWorkouts) => {
+watchEffect(() => {
+  const newWorkouts = workouts.value;
   if (newWorkouts) {
     const workoutDates = newWorkouts.getLoggedWorkoutsByAthlete.map(workout => {
       const date = new Date(workout.assignedDate);
@@ -94,6 +96,12 @@ watch(workouts, (newWorkouts) => {
 });
 
 const handleDate = (date) => {
+  if (attrs.value.length > 0) {
+    const selectedDate = attrs.value.find(attr => attr.dates.toDateString() === date.toDateString());
+    if (selectedDate && selectedDate.workout) {
+      router.push({ name: 'workout', params: { workoutId: selectedDate.workout.id } });
+    }
+  }
 };  
 
 </script> 
@@ -112,13 +120,6 @@ const handleDate = (date) => {
       </VDatePicker>
       
       <div v-if="selectedWorkouts && selectedWorkouts.length > 0">
-        {{ selectedWorkouts[0].workout.id }}
-        <WorkoutDisplay 
-          :original_workout_id="selectedWorkouts[0].workout.id" 
-          :id="selectedWorkouts[0].id" 
-          :key="selectedWorkouts[0].id"
-        />
-
         <RouterLink :to="{ name: 'workout', params: { workoutId: selectedWorkouts[0].id } }">
           View workout
         </RouterLink>
