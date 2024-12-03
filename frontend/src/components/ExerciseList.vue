@@ -3,7 +3,13 @@ import { ref } from 'vue';
 import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faPhone } from '@fortawesome/free-solid-svg-icons';
+import { useUserStore } from "@/store/user";
+import { useMutation } from "@vue/apollo-composable";
+import { ADD_EXERCISE_NAME } from '@/mutations';
 
+const userStore = useUserStore();
+const username = userStore.getUser.username;
+const exerciseList = userStore.getUser.exercises; 
 
 const props = defineProps({
   workout: {
@@ -58,6 +64,24 @@ const addExercise = (block) => {
   currentExercise.value = baseExercise;
 }
 
+
+
+
+const { mutate: addExerciseNameMutation } = useMutation(ADD_EXERCISE_NAME);
+
+const addExerciseName = async (name) => {
+  try {
+    const response = await addExerciseNameMutation({
+      name: name,
+      author: username,
+    });
+    console.log(response);
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+
 </script>
 
 <template>
@@ -65,8 +89,11 @@ const addExercise = (block) => {
   <div v-for="(block, index) in workout.blocks" class="p-block-div">
     <div class="title-row">
       <h3>Block {{ index+1 }}</h3>
+      {{ exerciseList }}
+      <!-- ADD LOGIC FOR SELECTING EXERCISE FROM DROPDOWN HERE -->
+      <input type="text" v-model="newExerciseName" placeholder="New Exercise Name" />
+      <button @click="addExerciseName(newExerciseName)">Add Exercise</button>
       <font-awesome-icon icon="trash" @click="deleteBlock(index)"/>
-      
     </div>
     <draggable v-model="block.exercises" tag="ul" group="exercises">
       <template #item="{element: exercise, index}">
@@ -95,7 +122,7 @@ const addExercise = (block) => {
               </tr>
               <tr>
                 <td v-for="set, index in currentExercise.sets" :key="index">
-                  <button class="delete-button" @click="deleteSet(index)">(delete {{ index }})</button>
+                  <button class="delete-button" @click="deleteSet(index)">delete</button>
                 </td>
               </tr>
             </table>
@@ -108,7 +135,7 @@ const addExercise = (block) => {
       </template>
       
     </draggable>
-    <font-awesome-icon icon="plus" @click="addExercise(block)"/>
+    <button @click="addExercise(block)"> add exercise </button>
   </div>
 
   <button @click="addBlock" style="width: 100px">add block</button>

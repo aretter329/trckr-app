@@ -100,30 +100,24 @@ const updateLoggedSets = async () => {
 </script>
 
 <template>
-  <div>
-    <h1>Workout completion page for {{ workoutId }}</h1>
-  </div>
-
-  <div v-if="workout && loggedSets">
+  <div v-if="workout && loggedSets" class="wrapper centered-content">
     <div v-for="block in workout.loggedWorkoutById.workout.blocks" :key="block.id" class="p-block-div">
       <div v-for="exercise in block.exercises" :key="exercise.id" class="exercise-box">
-        {{ exercise.name }} <br/>
-        <div class="set-list">
+        <span class="exercise-header"> {{ exercise.name }} </span>
           <table>
             <tr>
               <td>Weight</td>
               <td v-for="(set, index) in exercise.sets" :key="index">
-                <input type="number" v-model="(currentSets.find(loggedSet => loggedSet.original_set_id === set.id)).weightCompleted" />
+                <input v-model="(currentSets.find(loggedSet => loggedSet.original_set_id === set.id)).weightCompleted"/>
               </td>
             </tr>
             <tr>
               <td>Reps</td>
               <td v-for="(set, index) in exercise.sets" :key="index">
-                <input type="number" v-model="(currentSets.find(loggedSet => loggedSet.original_set_id === set.id)).repsCompleted" />
+                <input v-model="(currentSets.find(loggedSet => loggedSet.original_set_id === set.id)).repsCompleted" />
               </td>
             </tr>
           </table>
-        </div>
       </div>
     </div>
     <button @click="updateLoggedSets"> save workout </button>
@@ -137,7 +131,22 @@ const updateLoggedSets = async () => {
 <style scoped>
 
 td{ 
-  border: 1px solid black;
   padding: 5px;
 }
+
+input{
+  width: 50px;
+}
+
+.exercise-header{
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.wrapper{
+  padding: 20px;
+}
+
+
+
 </style>

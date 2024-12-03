@@ -44,6 +44,10 @@ class SetType(DjangoObjectType):
     class Meta:
         model = models.Set
 
+class ExerciseNameType(DjangoObjectType):
+    class Meta:
+        model = models.ExerciseName
+
 
 class LoggedWorkoutType(DjangoObjectType):
     class Meta:
@@ -270,6 +274,19 @@ class UpdateLoggedSets(graphene.Mutation):
             logged_set.weight_completed = set.weight_completed
             logged_set.save()
         return UpdateLoggedSets(logged_workout=logged_workout)
+    
+class AddExerciseName(graphene.Mutation):
+    class Arguments:
+        name = graphene.String(required=True)
+        author = graphene.String(required=True)
+    
+    exercise = graphene.Field(ExerciseNameType)
+    
+    def mutate(self, info, name, author):
+        author = models.User.objects.get(username=author)
+        exercise = models.ExerciseName(name=name, author=author)
+        exercise.save()
+        return AddExerciseName(exercise=exercise)
 
     
 class Mutation(graphene.ObjectType):
@@ -289,6 +306,7 @@ class Mutation(graphene.ObjectType):
     add_athlete = AddAthlete.Field()
     assign_program = AssignProgram.Field()
     add_athlete_to_group = AddAthleteToGroup.Field() 
+    add_exercise_name = AddExerciseName.Field()
 
     #athlete actions
     update_logged_sets = UpdateLoggedSets.Field()
@@ -338,6 +356,7 @@ class Query(graphene.ObjectType):
     logged_workout_by_id = graphene.Field(LoggedWorkoutType, logged_workout_id=graphene.ID())
     def resolve_logged_workout_by_id(root, info, logged_workout_id):
         return models.LoggedWorkout.objects.get(id=logged_workout_id)
+
 
     
 schema = graphene.Schema(query=Query, mutation=Mutation)

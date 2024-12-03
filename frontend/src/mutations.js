@@ -192,3 +192,22 @@ export const ADD_ATHLETE = gql`
       
     }
   }`;
+
+  export const ADD_EXERCISE_NAME = gql`
+  mutation (
+    $name: String!
+    $author: String!
+  ) {
+    addExerciseName(
+      name: $name
+      author: $author
+    ) {
+      exercise {
+        id
+        name
+        author{
+          username
+        }
+      }
+    }
+  }`;

@@ -127,22 +127,24 @@ const addProgram = async () => {
 <template>
 
   <div class="container">
-    {{ days}}
     <input type="text" id="title" v-model="title" placeholder="Program Name" style="width: 300px"/>
     <div class="days">
       <div class="day-container" v-for="day, index in days" :key="index">
         <div class="title-row">
-          <span style="flex-grow: 1; text-align: center;"> Day {{ index + 1 }} </span>
+          <span style="flex-grow: 1; text-align: center;"> Day {{ index + 1 }}
+          <label>
+            <input type="checkbox" v-model="day.isRestDay" />
+            Rest Day?
+          </label> </span>
           <button class="right-button" @click="deleteDay(day.number)">(delete day)</button>
         </div>
-         
+         <div v-if="!day.isRestDay">
         <!-- the colored row; workout type drop down, delete button-->
-          <div class="workout-container" v-for="(workout, index) in day.workouts" :key="index" :class="workout.type">
+          <div  class="workout-container" v-for="(workout, index) in day.workouts" :key="index" :class="workout.type">
             <div class="centered-row">
               <select id="workout-type" v-model="workout.type" style="width: 100px;">
                 <option value="strength">Strength</option>
                 <option value="cardio">Cardio</option>
-                <option value="rest">Rest</option>
               </select>
               <button @click="deleteWorkout(day, index)" class="delete-button">delete workout</button>
             </div>
@@ -150,9 +152,10 @@ const addProgram = async () => {
           </div>
          
         <button style="width: 100px;" @click="addWorkout(day)">Add Workout</button>
+      </div>
         
       </div>
-      <button style="height: 35px;" @click="addDay(index)">Add Day</button>
+      <button style="height: 35px;" @click="addDay(index)"><font-awesome-icon icon="plus" /></button>
     </div> 
     <textarea style="width: 50%" id="notes" v-model="notes" placeholder="Notes"></textarea>
     <button type="submit" @click="addProgram()">Save</button>
@@ -185,7 +188,6 @@ const addProgram = async () => {
     align-items: center;
   }
   .day-container{ 
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
     background-color:#f7f5f5b2;
     border-radius: 5px;
     width: 350px;

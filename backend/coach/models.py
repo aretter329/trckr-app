@@ -6,6 +6,7 @@ class User(AbstractUser):
     is_athlete = models.BooleanField(default=True)
     is_coach = models.BooleanField(default=False)
     coach = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, related_name='athletes')
+    exercises = models.ManyToManyField('ExerciseName', related_name='users', blank=True)
     
     def __str__(self):
         return self.username
@@ -101,4 +102,11 @@ class LoggedSet(models.Model):
     
     def __str__(self):
         return f'{self.set} {self.reps_completed} @ {self.weight_completed}'
+    
+class ExerciseName(models.Model):
+    name = models.CharField(max_length=255)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_exercises')
+    
+    def __str__(self):
+        return self.name
  
