@@ -1,5 +1,5 @@
 <script setup> 
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faPhone } from '@fortawesome/free-solid-svg-icons';
@@ -8,14 +8,20 @@ import { useMutation, useQuery } from "@vue/apollo-composable";
 import { ADD_EXERCISE_NAME } from '@/mutations';
 import gql from 'graphql-tag';
 import SearchBar from './SearchBar.vue';
+import { add } from 'date-fns';
 
 const userStore = useUserStore();
 const username = userStore.getUser.username;
 const showList = ref(false);
-
+const numSets = ref('');
+const numBlocks = ref('');
 const props = defineProps({
   workout: {
     type: Object,
+    required: true,
+  },
+  currentDay: {
+    type: Boolean,
     required: true,
   }
 });
@@ -24,22 +30,27 @@ const sets = ref([{ weight: '', reps: '' }]);
 const currentExercise = ref(props.workout.blocks[0].exercises[0]);
 const currentBlock = ref(props.workout.blocks[0]);
 
-//we may not need to keep track of order here if using draggable
-const addSet = () => {
-  currentExercise.value.sets.push({ order: '', weight: '', reps: '' });
-};
+/* REPLACED WITH #BLOCKS AND #SETS INPUTS
+
 
 const deleteSet = (index) => {
   currentExercise.value.sets.splice(index, 1);
+};
+
+const deleteBlock = (index) => {
+  props.workout.blocks.splice(index, 1);
+};
+*/
+
+const addSet = () => {
+  currentExercise.value.sets.push({ order: '', weight: '', reps: '' });
 };
 
 const deleteExercise = (block, index) => {
   block.exercises.splice(index, 1);
 };
 
-const deleteBlock = (index) => {
-  props.workout.blocks.splice(index, 1);
-};
+
 
 const saveExercise = () => {
   if (currentExercise.value.name.trim() === '') {
@@ -96,75 +107,123 @@ const { result: exerciseNames, loading, error } = useQuery(gql`
   }
 );
 
+watch(() => numBlocks.value, (newVal) => {
+  if (newVal > props.workout.blocks.length) {
+    for (let i = props.workout.blocks.length; i < newVal; i++) {
+      addBlock();
+    }
+  }
+  else {
+    props.workout.blocks = props.workout.blocks.slice(0, newVal);
+  }
+});
+
+const updateSets = (exercise) => {
+  if (exercise.numSets > exercise.sets.length) {
+    for (let i = exercise.sets.length; i < exercise.numSets; i++) {
+      exercise.sets.push({ weight: '', reps: '' });
+    }
+  }
+  else {
+    exercise.sets = exercise.sets.slice(0, exercise.numSets);
+  }
+};
+
 
 </script>
 
 <template>
-  <div class='container'> 
-  <div v-for="(block, index) in workout.blocks" class="p-block-div">
-    <div class="title-row">
-      <!-- THIS IS WHERE WE WILL ADD THE EXERCISE NAME DROPDOWN
-      
-       --><input type="text" v-model="newExerciseName" placeholder="New Exercise Name" />
-      <button @click="addExerciseName(newExerciseName)">Add Exercise</button>
-            
-      <font-awesome-icon icon="trash" @click="deleteBlock(index)"/>
+  <div class='main-container'>
+    <div> # Blocks <select v-model="numBlocks">
+                  <option v-for="n in 11" :key="n-1" :value="n-1">{{ n-1 }}</option>
+              </select>
     </div>
-    <draggable v-model="block.exercises" tag="ul" group="exercises">
-      <template #item="{element: exercise, index}">
-        <li>
-          <!-- non-edit mode --> 
-          <div v-if="(currentExercise != exercise)" class="title-row">
-            <div>  {{exercise.name}} <br/> <p style="font-size: 12px;">{{ exercise.sets.map(set => `${set.reps} @ ${set.weight}`).join(', ') }}</p> </div>
-            <button class="right-button" @click="expandExercise(exercise)">edit</button>
-            <button class="right-button" @click="deleteExercise(block, index)">remove</button>
-          </div>
-          <div v-else class="exercise-container">
-          <!--- edit mode -->
-            <SearchBar :items="exerciseNames.exerciseNamesByAuthor" @update:selectedItem="currentExercise.name = $event.name"/>
-            <table>
-              <tr>
-                <td v-for="set, index in currentExercise.sets" :key="index">
-                  <input class="set-detail" type="number" v-model="set.weight" placeholder="weight"/>
-                </td>
-                <button @click="addSet">+</button>
-              </tr>
-              <tr>
-                <td v-for="set, index in currentExercise.sets" :key="index">
-                  <input class="set-detail" type="number" v-model="set.reps" placeholder="reps"/>
-                </td>
-              </tr>
-              <tr>
-                <td v-for="set, index in currentExercise.sets" :key="index">
-                  <button class="delete-button" @click="deleteSet(index)">delete</button>
-                </td>
-              </tr>
-            </table>
 
-            <!--
-            <input type="text" v-model="currentExercise.description" placeholder="Notes" style="width: 150px;"/> 
+    <div v-for="(block, index) in workout.blocks" class="p-block-div">
+      <draggable v-model="block.exercises" tag="ul" group="exercises" itemKey="">
+        <template #item="{element: exercise, index}">
+          <li>
+            <!-- non-edit mode <button  
+             @click="expandExercise(exercise)">edit</button>
+              <button @click="deleteExercise(block, index)"><font-awesome-icon icon="trash"/></button>
+            -->
+            <div v-if="!currentDay" class="title-row">
+              <div>  
+                {{exercise.name}} 
+                <br/> 
+                <p style="font-size: 12px;">
+                  {{ exercise.sets.length }} x {{ exercise.sets.map(set => set.reps).join(', ') }}
+                </p> 
+              </div>
+              
+            </div>
+            <div v-else class="exercise-container">
+              <!--- edit mode -->
+              Exercise <SearchBar :items="exerciseNames.exerciseNamesByAuthor" @update:selectedItem="currentExercise.name = $event.name"/>
+              <br/>
+              
+              <div class="sets" v-if="exercise.name">
+                <label> # Sets </label>
+                <select v-model="exercise.numSets" @change="updateSets(exercise)">
+                  <option v-for="n in 21" :key="n-1" :value="n-1">{{ n-1 }}</option>
+                </select>
+                <table v-if="exercise.numSets > 0">
+                  <tr>
+                    <td>Weight </td>
+                    <td v-for="set, index in exercise.sets" :key="index">
+                      <input class="set-detail" type="number" v-model="set.weight" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Reps</td>
+                    <td v-for="set, index in exercise.sets" :key="index">
+                      <input class="set-detail" type="number" v-model="set.reps"/>
+                    </td>
+                  </tr>
+                  <tr>
+                   
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </li>
+        </template>
+      </draggable>
+      <button @click="addExercise(block)"><font-awesome-icon icon="plus"/></button>
+    </div>
 
-            <button @click="saveExercise">Save</button>
-         -->
-          </div>
-        </li>
-      </template>
-      
-    </draggable>
-    <button @click="addExercise(block)"> add exercise </button>
   </div>
 
-  <button @click="addBlock" style="width: 100px">add block</button>
-  
-  </div>
+  <!--<div class="title-row">
+         LOGIC TO ADD NEW EXERCISE NAME-- NOT SURE WHERE TO PUT YET 
+        <input type="text" v-model="newExerciseName" placeholder="New Exercise Name" />
+        <button @click="addExerciseName(newExerciseName)">Add Exercise</button>
+        <font-awesome-icon icon="trash" @click="deleteBlock(index)"/>
+      </div>-->
+
+       <!--
+                <input type="text" v-model="currentExercise.description" placeholder="Notes" style="width: 150px;"/> 
+
+                <button @click="saveExercise">Save</button>
+                
+                <button @click="addBlock" style="width: 100px">add block</button>
+                -->
+     <!-- NOT NEEDED DUE TO SET # INPUT                
+                    <button @click="addSet">+</button>
+                    <td v-for="set, index in currentExercise.sets" :key="index">
+                      <button class="delete-button" @click="deleteSet(index)">delete</button>
+                    </td>
+                  -->
 </template>
 
 <style scoped>
 
-.container{
+.main-container{
   display: flex;
   flex-direction: column;
   align-items: center;
+  width: auto; 
+  background-color: white;
 }
 .exercise-container{
   width: 100%;
@@ -219,6 +278,10 @@ li{
   overflow-y: scroll;
   background-color: lightgray;
   width: 150px;
+}
+
+.set-detail{
+  width: 50px;
 }
 
 

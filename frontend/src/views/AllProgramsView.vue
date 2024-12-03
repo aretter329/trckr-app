@@ -84,7 +84,7 @@ const addTag = async () => {
         <WriteProgram/>
        </div>
 
-      <div v-if="is_coach" class="list-div">
+      <div v-if="is_coach && !writeProgram" class="list-div">
         <button @click="writeProgram = !writeProgram">Write a Program</button>
         <div v-if="loading">Loading...</div>
         <div v-else-if="error" class="warn">{{ error }}</div>

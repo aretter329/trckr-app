@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useMutation } from "@vue/apollo-composable";
 import { useUserStore } from "@/store/user";
 import { ADD_PROGRAM } from '@/mutations';
@@ -12,9 +12,13 @@ const title = ref('');
 const notes = ref('');
 const userStore = useUserStore();
 const tags = ref([]);
-const days = ref([{ name: 'Day 1', number: 1, workouts: [{ type: 'strength', order: 1, blocks: [{name: 'Block 1', exercises: [{name:'', sets:[{order: '', weight:'', reps:''}]}]}] }] }]);
+const days = ref([]);
 const day_states = ref([]);
 const program_id = ref();
+const numDays = ref('');
+const showNotes = ref(false);
+const isEditing = ref(false);
+const currentDay = ref();
 
 //add logic to number the days as keys in the days dictionary, etc. 
 const addDay = (index) => {
@@ -51,6 +55,18 @@ const createProgram = useMutation(ADD_PROGRAM, {
     };
   }
 });
+
+watch(() => numDays.value, (newVal) => {
+  if (newVal > days.value.length) {
+    for (let i = days.value.length; i < newVal; i++) {
+      addDay();
+    }
+  }
+  else {
+    days.value = days.value.slice(0, newVal);
+  }
+});
+
 
 const formatDays = () => {
   let formatted_days = [];
@@ -122,24 +138,35 @@ const addProgram = async () => {
     console.error(error);
   }
 };
+
 </script>
 
 <template>
-
   <div class="container">
-    <input type="text" id="title" v-model="title" placeholder="Program Name" style="width: 300px"/>
+    <input 
+      type="text" 
+      v-model="title" 
+      class='title-input'
+      :class="{ editable: isEditing }" 
+      @blur="isEditing = false" 
+      @focus="isEditing = true" 
+      placeholder="Untitled Program"
+      @keydown.enter="$event.target.blur()"
+    />
+    <div> # Days <input type="number" id="numDays" v-model="numDays" style="width: 40px"/> </div>
     <div class="days">
-      <div class="day-container" v-for="day, index in days" :key="index">
+      <div class="day-container" v-for="day, index in days" :key="index" @click="currentDay=day">
         <div class="title-row">
           <span style="flex-grow: 1; text-align: center;"> Day {{ index + 1 }}
           <label>
             <input type="checkbox" v-model="day.isRestDay" />
             Rest Day?
           </label> </span>
-          <button class="right-button" @click="deleteDay(day.number)">(delete day)</button>
+          <!-- old logic to delete day 
+           <button class="right-button" @click="deleteDay(day.number)">(delete day)</button>
+           -->
         </div>
-         <div v-if="!day.isRestDay">
-        <!-- the colored row; workout type drop down, delete button-->
+        <div v-if="!day.isRestDay" style="width: 100%;">
           <div  class="workout-container" v-for="(workout, index) in day.workouts" :key="index" :class="workout.type">
             <div class="centered-row">
               <select id="workout-type" v-model="workout.type" style="width: 100px;">
@@ -148,32 +175,37 @@ const addProgram = async () => {
               </select>
               <button @click="deleteWorkout(day, index)" class="delete-button">delete workout</button>
             </div>
-            <ExerciseList :workout="workout"/>
+            <ExerciseList :workout="workout" :currentDay="currentDay == day"/>
           </div>
          
         <button style="width: 100px;" @click="addWorkout(day)">Add Workout</button>
       </div>
         
       </div>
-      <button style="height: 35px;" @click="addDay(index)"><font-awesome-icon icon="plus" /></button>
+      <!-- old logic to add days 
+       <button style="height: 35px;" @click="addDay(index)"><font-awesome-icon icon="plus" /></button>
+       -->
     </div> 
-    <textarea style="width: 50%" id="notes" v-model="notes" placeholder="Notes"></textarea>
+    <button v-show="!showNotes" @click="showNotes = true"> Add Note </button>
+    <textarea v-if="showNotes" style="width: 50%" id="notes" v-model="notes" placeholder="Notes"></textarea>
     <button type="submit" @click="addProgram()">Save</button>
   </div>
 </template>
 
 <style scoped>
+
+  .container{
+    height: 85vh;
+    width: 80vw;
+    display: flex;
+    flex-direction: column;
+  }
+  
   label {
     display: block;
     margin-top: 1rem;
-  }
-  input, textarea {
-    width: 100%;
-    padding: 0.5rem;
-    margin-top: 0.5rem;
-    background-color: white;
-  }
-  
+  } 
+
   button:hover {
     cursor: pointer;
     font-weight: bold;
@@ -229,8 +261,6 @@ const addProgram = async () => {
     display: flex;
     flex-direction: column;
     margin: 5px;
-    width: 95%;
-    border-radius: 5px;
   }
 
   .blockA{
@@ -299,6 +329,25 @@ const addProgram = async () => {
     display: flex; 
     flex-direction: column;
     align-items: center;
+  }
+
+  .title-input {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    border: none;
+    background: transparent;
+    outline: none;
+    cursor: pointer; 
+  }
+
+  input.editable {
+    cursor: text; 
+    border-bottom: 2px solid lightgray; 
+  }
+
+  input:focus {
+    background: #f9f9f9;
   }
   
 </style>

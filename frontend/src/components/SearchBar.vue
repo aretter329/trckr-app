@@ -38,14 +38,14 @@ const selectItem = (item) => {
 
 <template>
   <input type="text" v-model="search" style="width: 150px;" @click="keepOpen = true"/>
-    <ul v-if="showList" class="search-list">
-      <li class="item" 
-          v-for="item in filteredItems" 
-          :key="item.name" 
-          @click="selectItem(item)">
-        {{ item.name }}
-      </li>
-    </ul>
+  <ul v-if="showList" class="search-list">
+    <li class="item" 
+        v-for="item in filteredItems" 
+        :key="item.name" 
+        @click="selectItem(item)">
+      {{ item.name }}
+    </li>
+  </ul>
 </template>
 
 
@@ -54,6 +54,7 @@ const selectItem = (item) => {
   .search-list{
     list-style-type: none;
     padding: 0;
+    width: 150px;
   }
   .item{
     cursor: pointer;
@@ -62,4 +63,7 @@ const selectItem = (item) => {
     background-color: lightgray;
   }
 
+  input{
+    width: 150px;
+  }
 </style>
