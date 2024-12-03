@@ -48,7 +48,6 @@ class ExerciseNameType(DjangoObjectType):
     class Meta:
         model = models.ExerciseName
 
-
 class LoggedWorkoutType(DjangoObjectType):
     class Meta:
         model = models.LoggedWorkout
@@ -356,6 +355,10 @@ class Query(graphene.ObjectType):
     logged_workout_by_id = graphene.Field(LoggedWorkoutType, logged_workout_id=graphene.ID())
     def resolve_logged_workout_by_id(root, info, logged_workout_id):
         return models.LoggedWorkout.objects.get(id=logged_workout_id)
+    
+    exercise_names_by_author = graphene.List(ExerciseNameType, author=graphene.String())
+    def resolve_exercise_names_by_author(root, info, author):
+        return models.ExerciseName.objects.filter(author__username=author)
 
 
     

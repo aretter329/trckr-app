@@ -1,15 +1,17 @@
 <script setup> 
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import draggable from 'vuedraggable';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { faPhone } from '@fortawesome/free-solid-svg-icons';
 import { useUserStore } from "@/store/user";
-import { useMutation } from "@vue/apollo-composable";
+import { useMutation, useQuery } from "@vue/apollo-composable";
 import { ADD_EXERCISE_NAME } from '@/mutations';
+import gql from 'graphql-tag';
+import SearchBar from './SearchBar.vue';
 
 const userStore = useUserStore();
 const username = userStore.getUser.username;
-const exerciseList = userStore.getUser.exercises; 
+const showList = ref(false);
 
 const props = defineProps({
   workout: {
@@ -21,6 +23,7 @@ const props = defineProps({
 const sets = ref([{ weight: '', reps: '' }]);
 const currentExercise = ref(props.workout.blocks[0].exercises[0]);
 const currentBlock = ref(props.workout.blocks[0]);
+
 //we may not need to keep track of order here if using draggable
 const addSet = () => {
   currentExercise.value.sets.push({ order: '', weight: '', reps: '' });
@@ -64,9 +67,6 @@ const addExercise = (block) => {
   currentExercise.value = baseExercise;
 }
 
-
-
-
 const { mutate: addExerciseNameMutation } = useMutation(ADD_EXERCISE_NAME);
 
 const addExerciseName = async (name) => {
@@ -81,6 +81,21 @@ const addExerciseName = async (name) => {
   }
 };
 
+const { result: exerciseNames, loading, error } = useQuery(gql` 
+  query{
+    exerciseNamesByAuthor(author: "${username}") {
+      name
+    }
+  }`,
+  {
+    variables() {
+      return {
+        author: username
+      };
+    }
+  }
+);
+
 
 </script>
 
@@ -88,11 +103,11 @@ const addExerciseName = async (name) => {
   <div class='container'> 
   <div v-for="(block, index) in workout.blocks" class="p-block-div">
     <div class="title-row">
-      <h3>Block {{ index+1 }}</h3>
-      {{ exerciseList }}
-      <!-- ADD LOGIC FOR SELECTING EXERCISE FROM DROPDOWN HERE -->
-      <input type="text" v-model="newExerciseName" placeholder="New Exercise Name" />
+      <!-- THIS IS WHERE WE WILL ADD THE EXERCISE NAME DROPDOWN
+      
+       --><input type="text" v-model="newExerciseName" placeholder="New Exercise Name" />
       <button @click="addExerciseName(newExerciseName)">Add Exercise</button>
+            
       <font-awesome-icon icon="trash" @click="deleteBlock(index)"/>
     </div>
     <draggable v-model="block.exercises" tag="ul" group="exercises">
@@ -106,8 +121,7 @@ const addExerciseName = async (name) => {
           </div>
           <div v-else class="exercise-container">
           <!--- edit mode -->
-            <input type="text" v-model="currentExercise.name" placeholder="Exercise Name" style="width: 150px;"/>
-            
+            <SearchBar :items="exerciseNames.exerciseNamesByAuthor" @update:selectedItem="currentExercise.name = $event.name"/>
             <table>
               <tr>
                 <td v-for="set, index in currentExercise.sets" :key="index">
@@ -126,10 +140,12 @@ const addExerciseName = async (name) => {
                 </td>
               </tr>
             </table>
+
+            <!--
             <input type="text" v-model="currentExercise.description" placeholder="Notes" style="width: 150px;"/> 
 
             <button @click="saveExercise">Save</button>
-         
+         -->
           </div>
         </li>
       </template>
@@ -186,6 +202,25 @@ li{
   border-radius: 5px;
   background-color: rgb(240, 240, 240);;
 }
+
+.exercise-name{
+  cursor: pointer;
+  padding: 0;
+  border: none; 
+  border-radius: 0;
+}
+
+.exercise-name:hover{
+  background-color: #f7f5f5b2;
+}
+
+.search-list{
+  max-height: 50px;
+  overflow-y: scroll;
+  background-color: lightgray;
+  width: 150px;
+}
+
 
 
 </style>
