@@ -43,30 +43,36 @@ watch(() => user.value.token, (newToken, oldToken) => {
   
   <header>
     <nav>
-      <div v-if="user.isAuthenticated" style="display: flex">
-        <div @mouseover="showMenu = true" @mouseleave="showMenu = false">
-          {{ userStore.getUser.username }}
-          <div v-if="showMenu" class="dropdown-menu">
-            <RouterLink to="/profile">Profile</RouterLink>
-            <RouterLink to="/settings">Settings</RouterLink>
-            <RouterLink to="/login" @click="logout">Logout</RouterLink>
+      <div v-if="user.isAuthenticated" style="display: flex; width: 100%">
+        <div class="left">
+          <div class="username" @mouseover="showMenu = true" @mouseleave="showMenu = false" > 
+            {{ userStore.getUser.username }} 
+            <div v-if="showMenu" class="dropdown-menu">
+              <RouterLink to="/profile">Profile</RouterLink>
+              <RouterLink to="/settings">Settings</RouterLink>
+              <RouterLink to="/login" @click="logout">Logout</RouterLink>
+            </div>
           </div>
+          
         </div>
-        <RouterLink to="/" :class="{ active: $route.path === '/'}">
-          <div class="nav-link">
-            Home
-          </div>
-        </RouterLink>
-        <RouterLink v-if="user.info.isCoach" to="/all-programs" :class="{ active: $route.path === '/all-programs'}">
-          <div class="nav-link">
-            Programs
-          </div>
-        </RouterLink>
-        <RouterLink v-if="user.info.isCoach" to="/athletes" :class="{ active: $route.path === '/athletes'}">
-          <div class="nav-link">
-            Athletes
-          </div>
-        </RouterLink>
+        <div class="center">
+          <RouterLink to="/" :class="{ active: $route.path === '/'}">
+            <div class="nav-link">
+              Home
+            </div>
+          </RouterLink>
+          <RouterLink v-if="user.info.isCoach" to="/all-programs" :class="{ active: $route.path === '/all-programs'}">
+            <div class="nav-link">
+              Programs
+            </div>
+          </RouterLink>
+          <RouterLink v-if="user.info.isCoach" to="/athletes" :class="{ active: $route.path === '/athletes'}">
+            <div class="nav-link">
+              Athletes
+            </div>
+          </RouterLink>
+        </div>
+        <div class="right"></div>
       </div>
       <div v-else style="display:flex">
         <RouterLink to="/login" :class="{ active: $route.path === '/login'}">
@@ -79,7 +85,8 @@ watch(() => user.value.token, (newToken, oldToken) => {
             Register
           </div>
         </RouterLink>
-      </div>
+        </div>
+      
 
     </nav>
   </header>
@@ -126,11 +133,28 @@ watch(() => user.value.token, (newToken, oldToken) => {
     display: flex;
     flex-direction: column;
     position: absolute;
-    background-color: var(--dodger-blue);
+    background-color: var(--uranian-blue);
     color: white;
-    border-radius: 5px;
     padding: 5px;
-    margin-top: 5px;
+    margin-top: 35px;
+    left: 0%;
   }
- 
+
+  .left, .right{
+    flex: 1;
+    display: flex;
+  }
+
+  .center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: auto;
+  }
+
+  .username{
+    padding: 5px;
+    margin-left: 10px;
+    display: flex;
+  }
 </style>
