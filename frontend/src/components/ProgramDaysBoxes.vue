@@ -64,9 +64,8 @@ const { result, loading, error } = useQuery(gql`
 </script>
 
 <template> 
-  <div v-if="result && result.programDays" style="border-top: 2px solid black">
+  <div v-if="result && result.programDays" class="main">
     <button v-show="allowAssignment" @click="showAssignment=true"> Assign Program</button>
-    {{ showAssignment }}
     <AssignmentBox v-if="showAssignment" :coach="coach" :program="result.programDays" @showAssignment="showAssignment=false"/>
     <div class="program-days-boxes">
       <div v-for="day in result.programDays" :key="day.id" class="program-day-box">
@@ -111,5 +110,12 @@ const { result, loading, error } = useQuery(gql`
 .day-name{
   display: flex; 
   justify-content: center;
+}
+
+.main{
+  border-top: 2px solid black; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center;
 }
 </style> 

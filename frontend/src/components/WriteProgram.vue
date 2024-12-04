@@ -143,52 +143,63 @@ const addProgram = async () => {
 
 <template>
   <div class="container">
-    <input 
-      type="text" 
-      v-model="title" 
-      class='title-input'
-      :class="{ editable: isEditing }" 
-      @blur="isEditing = false" 
-      @focus="isEditing = true" 
-      placeholder="Untitled Program"
-      @keydown.enter="$event.target.blur()"
-    />
-    <div> # Days <input type="number" id="numDays" v-model="numDays" style="width: 40px"/> </div>
+    <div style="display: flex;">
+      <input 
+        type="text" 
+        v-model="title" 
+        class='title-input'
+        :class="{ editable: isEditing }" 
+        @blur="isEditing = false" 
+        @focus="isEditing = true" 
+        placeholder="Untitled Program"
+        @keydown.enter="$event.target.blur()"
+      />
+      <div> # Days 
+        <select v-model="numDays">
+          <option v-for="n in 21" :key="n-1" :value="n-1">{{ n-1 }}</option>
+        </select>
+      </div>
+    </div>
     <div class="days">
-      <div class="day-container" v-for="day, index in days" :key="index" @click="currentDay=day">
-        <div class="title-row">
-          <span style="flex-grow: 1; text-align: center;"> Day {{ index + 1 }}
-          <label>
-            <input type="checkbox" v-model="day.isRestDay" />
-            Rest Day?
-          </label> </span>
-          <!-- old logic to delete day 
-           <button class="right-button" @click="deleteDay(day.number)">(delete day)</button>
-           -->
+      <div class="day-container " :class="{ 'current-day': currentDay === day }" v-for="day, index in days" :key="index" @click="currentDay=day">
+        <div class="day-title">
+          <span> Day {{ index + 1 }} </span>
         </div>
-        <div v-if="!day.isRestDay" style="width: 100%;">
-          <div  class="workout-container" v-for="(workout, index) in day.workouts" :key="index" :class="workout.type">
+
+        <div>
+          <div class="workout-container" v-for="(workout, index) in day.workouts" :key="index" :class="workout.type">
             <div class="centered-row">
-              <select id="workout-type" v-model="workout.type" style="width: 100px;">
-                <option value="strength">Strength</option>
-                <option value="cardio">Cardio</option>
-              </select>
-              <button @click="deleteWorkout(day, index)" class="delete-button">delete workout</button>
+              <div v-if="currentDay == day" class="title-row">
+                <select id="workout-type" v-model="workout.type" style="width: 100px;">
+                  <option value="strength">Strength</option>
+                  <option value="cardio">Cardio</option>
+                </select>
+                <button @click="deleteWorkout(day, index)" class="delete-button">delete workout</button>
+              </div>
             </div>
             <ExerciseList :workout="workout" :currentDay="currentDay == day"/>
           </div>
          
-        <button style="width: 100px;" @click="addWorkout(day)">Add Workout</button>
+        <button v-if="currentDay == day" style="width: 100px;" @click="addWorkout(day)">Add Workout</button>
       </div>
         
       </div>
       <!-- old logic to add days 
        <button style="height: 35px;" @click="addDay(index)"><font-awesome-icon icon="plus" /></button>
        -->
+       <!-- old logic to delete day 
+           <button class="right-button" @click="deleteDay(day.number)">(delete day)</button>
+
+           <span style="margin-left: 50px;"> 
+            <input type="checkbox" v-model="day.isRestDay" />Rest Day 
+          </span>
+           -->
     </div> 
-    <button v-show="!showNotes" @click="showNotes = true"> Add Note </button>
-    <textarea v-if="showNotes" style="width: 50%" id="notes" v-model="notes" placeholder="Notes"></textarea>
-    <button type="submit" @click="addProgram()">Save</button>
+    <div class="bottom-row">
+      <button v-show="!showNotes" @click="showNotes = true"> Add Note </button>
+      <textarea v-if="showNotes" style="width: 50%" id="notes" v-model="notes" placeholder="Notes"></textarea>
+      <button type="submit" @click="addProgram()">Save</button>
+    </div>
   </div>
 </template>
 
@@ -216,16 +227,19 @@ const addProgram = async () => {
 
   .days{
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
+    overflow-x: scroll;
+    max-width: 80vw;
+    height: 100%;
   }
+
   .day-container{ 
     background-color:#f7f5f5b2;
     border-radius: 5px;
-    width: 350px;
+    min-width: 150px;
     margin: 10px;
     display: flex; 
-    justify-content: center;
+    height: 100%;
     flex-direction: column;
     align-items: center;
 
@@ -236,8 +250,18 @@ const addProgram = async () => {
     }
   }
 
+  .day-container:hover{
+    cursor: pointer;
+  }
+
   button{
     border: none
+  }
+
+  .current-day{
+    min-width: 400px;
+    overflow-y: auto;
+
   }
 
   .centered-row{
@@ -323,8 +347,6 @@ const addProgram = async () => {
     margin-left: auto;
   }
 
-  
-
   form{
     display: flex; 
     flex-direction: column;
@@ -348,6 +370,21 @@ const addProgram = async () => {
 
   input:focus {
     background: #f9f9f9;
+  }
+
+  .bottom-row{
+    border: 1px solid blue; 
+    position: absolute;
+    bottom: 10%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .day-title{
+    display: flex; 
+    flex-direction: row;
+    justify-content: space-between;
   }
   
 </style>

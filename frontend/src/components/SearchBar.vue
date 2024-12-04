@@ -5,12 +5,16 @@ const props = defineProps({
   items: {
     type: Object,
     required: true,
+  },
+  selectedItem: {
+    type: Object,
+    required: false,
   }
 });
 
 const emit = defineEmits(['update:selectedItem']);
 
-const search = ref('');
+const search = ref(props.selectedItem ? props.selectedItem.name : '');
 const showList = ref(false);
 const keepOpen = ref(false);
 
@@ -37,7 +41,12 @@ const selectItem = (item) => {
 </script>
 
 <template>
-  <input type="text" v-model="search" style="width: 150px;" @click="keepOpen = true"/>
+  <input type="text" 
+         v-model="search" 
+         style="width: 150px;"  
+         @click="keepOpen = true"
+        />
+
   <ul v-if="showList" class="search-list">
     <li class="item" 
         v-for="item in filteredItems" 

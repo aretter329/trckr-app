@@ -85,7 +85,7 @@ const addTag = async () => {
        </div>
 
       <div v-if="is_coach && !writeProgram" class="list-div">
-        <button @click="writeProgram = !writeProgram">Write a Program</button>
+        <button class='simple-button' @click="writeProgram = !writeProgram">New Program</button>
         <div v-if="loading">Loading...</div>
         <div v-else-if="error" class="warn">{{ error }}</div>
         <div v-else-if="authoredPrograms" style="width: 100%">
@@ -113,4 +113,6 @@ const addTag = async () => {
     flex-direction: column;
     align-items: center;
   }
+
+
 </style>

@@ -134,9 +134,11 @@ const updateSets = (exercise) => {
 
 <template>
   <div class='main-container'>
-    <div> # Blocks <select v-model="numBlocks">
-                  <option v-for="n in 11" :key="n-1" :value="n-1">{{ n-1 }}</option>
-              </select>
+    <div v-if="currentDay"> 
+      # Blocks 
+      <select v-model="numBlocks">
+        <option v-for="n in 11" :key="n-1" :value="n-1">{{ n-1 }}</option>
+      </select>
     </div>
 
     <div v-for="(block, index) in workout.blocks" class="p-block-div">
@@ -157,9 +159,12 @@ const updateSets = (exercise) => {
               </div>
               
             </div>
-            <div v-else class="exercise-container">
+            <div v-else class="exercise-container editing">
               <!--- edit mode -->
-              Exercise <SearchBar :items="exerciseNames.exerciseNamesByAuthor" @update:selectedItem="currentExercise.name = $event.name"/>
+              Exercise <SearchBar 
+                        :selectedItem="exercise"
+                        :items="exerciseNames.exerciseNamesByAuthor" 
+                        @update:selectedItem="currentExercise.name = $event.name"/>
               <br/>
               
               <div class="sets" v-if="exercise.name">
@@ -189,7 +194,7 @@ const updateSets = (exercise) => {
           </li>
         </template>
       </draggable>
-      <button @click="addExercise(block)"><font-awesome-icon icon="plus"/></button>
+      <button v-if="currentDay" @click="addExercise(block)"><font-awesome-icon icon="plus"/></button>
     </div>
 
   </div>
@@ -225,6 +230,7 @@ const updateSets = (exercise) => {
   width: auto; 
   background-color: white;
 }
+
 .exercise-container{
   width: 100%;
   overflow-x: auto;

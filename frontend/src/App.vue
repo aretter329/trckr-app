@@ -120,7 +120,8 @@ watch(() => user.value.token, (newToken, oldToken) => {
 
   body{
     padding-top: 2rem;
-    background-color: rgb(248, 247, 255);
+    background-color: var(--uranian-blue); 
+
     
   }
 

@@ -61,7 +61,7 @@ function toggleCollapse(slug, id) {
 <template>
   <div>
     <div v-for="program in props.programs" :key="program.slug" class="program">
-      <div class="program-row">
+      <div class="program-row" @click="toggleCollapse(program.slug, program.id)">
         <div class="program-title">
           {{ program.title }}
         </div>
@@ -72,10 +72,6 @@ function toggleCollapse(slug, id) {
         <div class="program-date">
           {{ formatDate(program.dateCreated) }}
         </div>
-
-        <button @click="toggleCollapse(program.slug, program.id)">
-          {{ !isCollapsed(program.slug) ? 'Show Details' : 'Hide Details' }}
-        </button>
 
       </div>
       <div v-if="isCollapsed(program.slug)" class="program-details">

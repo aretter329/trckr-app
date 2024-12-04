@@ -19,8 +19,8 @@ class Tag(models.Model):
     
 class Program(models.Model):
   title = models.CharField(max_length=255, unique=True)
-  slug = models.SlugField(max_length=255, unique=True)
-  notes = models.TextField()
+  slug = models.SlugField(max_length=255, unique=True, blank=True)
+  notes = models.TextField(blank=True)
   date_created = models.DateTimeField(auto_now_add=True)
   date_modified = models.DateTimeField(auto_now=True)
   published = models.BooleanField(default=False)
@@ -54,7 +54,7 @@ class Block(models.Model):
 
 class Exercise(models.Model):
     name = models.CharField(max_length=255)
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
     order_in_block = models.IntegerField()
     #the sets and reps should likely be their own model with a foreign key to exercise
     #because they will may be different for each user & should encompass percent of 1RM  
@@ -87,7 +87,7 @@ class LoggedWorkout(models.Model):
     assigned_date = models.DateTimeField()
     date = models.DateTimeField(auto_now_add=True)
     workout = models.ForeignKey(Workout, on_delete=models.CASCADE, related_name='logged_workouts')
-    notes = models.TextField()
+    notes = models.TextField(blank=True)
     
     
     def __str__(self):

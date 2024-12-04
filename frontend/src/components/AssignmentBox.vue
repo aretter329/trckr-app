@@ -48,6 +48,14 @@ const logWorkout = async (username, assigned_date, workout_id, sets) => {
   }
 };
 
+const toggleGroupSelection = (group) => {
+  group.athletes.forEach(athlete => {
+    if (!selectedAthletes.value.includes(athlete.username)) {
+      selectedAthletes.value.push(athlete.username);
+    }
+  });
+};
+
 
 function assignToAthletes() {
   let assigned_date = new Date(start_date.value).toISOString().split('T')[0];
@@ -94,26 +102,75 @@ const { result, loading, error } = useQuery(gql`
   }
 );
 
+const { result: workoutGroups } = useQuery(gql`
+  query{
+    workoutGroupsByCoach(coachUsername: "${props.coach}") {
+      coach{
+        id
+        username
+      }
+      name
+      athletes {
+        id
+        username
+      }
+    }
+  }
+`,
+{
+  variables() {
+    return {
+      coachUsername: props.coach
+    };
+  }
+}
+);
+
 </script> 
 
 <template>
-  <div v-if="result && result.allAthletesByCoach">
-    <div v-for="athlete in result.allAthletesByCoach" :key="athlete.id">
-      <input type="checkbox" :id="athlete.id" v-model="selectedAthletes" :value="athlete.username">
-      <label :for="athlete.id">{{ athlete.username }}</label>
+  <div style="display: flex;">
+    <div style="display: flex; flex-direction: column; align-items: center;" class="sub-box"> 
+      Start Date: 
+      <VDatePicker 
+        ref="calendar" 
+        transparent 
+        borderless 
+        :color="'green'" 
+        v-model="start_date"
+        :attributes="attrs">
+      </VDatePicker>
     </div>
-  </div> 
-  Start Date: 
- 
 
-  <VDatePicker 
-      ref="calendar" 
-      transparent 
-      borderless 
-      :color="'green'" 
-      v-model="start_date"
-      :attributes="attrs">
-    </VDatePicker>
+    <div class="sub-box">
+      <h3> Workout Groups </h3>
+      <div v-if="workoutGroups && workoutGroups.workoutGroupsByCoach">
+        <div v-for="group in workoutGroups.workoutGroupsByCoach" :key="group.name">
+          <input type="checkbox" :id="group.name" @change="toggleGroupSelection(group)" />
+          <label :for="group.name">{{ group.name }}</label>
+        </div>
+      </div>
+    </div>
 
+    <div style="margin-left: 50px;" class="sub-box">
+      <h3> Athletes </h3>
+      <div v-if="result && result.allAthletesByCoach">
+        <div v-for="athlete in result.allAthletesByCoach" :key="athlete.id">
+          <input type="checkbox" :id="athlete.id" v-model="selectedAthletes" :value="athlete.username">
+          <label :for="athlete.id">{{ athlete.username }}</label>
+        </div>
+      </div>
+    </div>
+    
+  </div>
     <button @click="assignToAthletes"> confirm </button>
 </template> 
+
+<style scoped>
+  .sub-box {
+    margin-left: 50px;
+    margin-right: 50px;
+    padding: 10px; 
+  }
+
+</style> 

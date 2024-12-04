@@ -110,7 +110,7 @@ class CreateProgram(graphene.Mutation):
 
     class Arguments:
         title = graphene.String(required=True)
-        notes = graphene.String(required=True)
+        notes = graphene.String(required=False)
         author = graphene.String(required=True)
         tags = graphene.List(graphene.String)
         slug = graphene.String(required=True)
@@ -359,6 +359,10 @@ class Query(graphene.ObjectType):
     exercise_names_by_author = graphene.List(ExerciseNameType, author=graphene.String())
     def resolve_exercise_names_by_author(root, info, author):
         return models.ExerciseName.objects.filter(author__username=author)
+    
+    workout_groups_by_coach = graphene.List(WorkoutGroupType, coach_username=graphene.String())
+    def resolve_workout_groups_by_coach(root, info, coach_username):
+        return models.WorkoutGroup.objects.filter(coach__username=coach_username)
 
 
     
