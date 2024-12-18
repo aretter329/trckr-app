@@ -49,7 +49,6 @@ watch(() => user.value.token, (newToken, oldToken) => {
           <div class="username" @mouseover="showMenu = true" @mouseleave="showMenu = false" > 
             {{ userStore.getUser.username }} 
             <div v-if="showMenu" class="dropdown-menu">
-              <RouterLink to="/profile">Profile</RouterLink>
               <RouterLink to="/settings">Settings</RouterLink>
               <RouterLink to="/login" @click="logout">Logout</RouterLink>
             </div>
@@ -134,7 +133,7 @@ watch(() => user.value.token, (newToken, oldToken) => {
     display: flex;
     flex-direction: column;
     position: absolute;
-    background-color: var(--uranian-blue);
+    background-color: lightseagreen;
     color: white;
     padding: 5px;
     margin-top: 35px;

@@ -7,8 +7,6 @@ import WODs from '../components/WODs.vue';
 import { useQuery } from "@vue/apollo-composable";
 import gql from 'graphql-tag';
 
-
-
 const userStore = useUserStore();
 const name = userStore.getUser.firstName;
 const username = userStore.getUser.username;

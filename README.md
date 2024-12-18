@@ -18,7 +18,7 @@ git clone https://github.com/aretter329/trckr-app.git
 
 Navigate to the project folder 
 ```bash 
-cd trckr
+cd trckr-app
 ```
 
 ### Set up the Backend 
@@ -54,7 +54,7 @@ python3 manage.py runserver
 
 In a new terminal window, navigate to the frontend folder 
 ```bash 
-cd trckr
+cd trckr-app
 cd frontend
 ```
 

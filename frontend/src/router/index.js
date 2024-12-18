@@ -8,6 +8,9 @@ import ProfileView from "../views/ProfileView.vue";
 import SettingsView from "../views/SettingsView.vue";
 import WorkoutView from "../views/WorkoutView.vue"; 
 import AthleteView from "../views/AthleteView.vue";
+import { useUserStore } from "@/store/user";
+import { ref } from "vue";
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -16,6 +19,7 @@ const router = createRouter({
       path: "/",
       name: "home",
       component: HomeView,
+      meta: { requiresAuth: true },
     },
     {
       path: "/all-programs",
@@ -59,8 +63,27 @@ const router = createRouter({
       component: AthleteView,
       props: true,
     }
-
   ],
+});
+
+router.beforeEach((to, from, next) => {
+  const isAuthenticated = false; // Replace with actual authentication check
+  const userStore = useUserStore();
+  const user = ref({
+    isAuthenticated: false, 
+    token: userStore.getToken || "", 
+    info: userStore.getUser || {}
+  })
+
+  if (user.value.token) {
+    user.value.isAuthenticated = true; 
+  }
+
+  if (to.matched.some(record => record.meta.requiresAuth) && !user.value.isAuthenticated) {
+    next({ name: 'login' });
+  } else {
+    next();
+  }
 });
 
 export default router;
