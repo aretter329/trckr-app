@@ -53,27 +53,28 @@
 
 .p-block-div{
   width: 100%;
-  margin: 5px;
+  margin: 0 0 0 0;
   padding: 10px;
+  border-radius: 10px;
 }
 .p-block-div:nth-child(5n+1) {
-  border-left: var(--persian-blue) 5px solid;
+  border: var(--persian-blue) 4px solid;
 }
 
 .p-block-div:nth-child(5n+2) {
-  border-left: var(--mikado-yellow) 5px solid;
+  border: var(--mikado-yellow) 4px solid;
 }
 
 .p-block-div:nth-child(5n+3) {
-  border-left: var(--lime-green) 5px solid;
+  border: var(--lime-green) 4px solid;
 }
 
 .p-block-div:nth-child(5n+4) {
-  border-left: var(--uranian-blue) 5px solid;
+  border: var(--uranian-blue) 4px solid;
 }
 
 .p-block-div:nth-child(5n+5) {
-  border-left: var(--flame-orange) 5px solid;
+  border: var(--flame-orange) 4px solid;
 }
 /* 
 @media (prefers-color-scheme: dark) {
@@ -119,7 +120,7 @@ body {
     'Droid Sans',
     'Helvetica Neue',
     sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -171,5 +172,9 @@ body {
 
 .simple-button:active {
   opacity: .5;
+}
+
+.error {
+  color: red;
 }
 

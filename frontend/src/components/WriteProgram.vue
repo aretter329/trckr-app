@@ -19,6 +19,17 @@ const numDays = ref('');
 const showNotes = ref(false);
 const isEditing = ref(false);
 const currentDay = ref();
+const errorMessage = ref('');
+const navBack = ref(false);
+
+const props = defineProps({
+  existingSlugs: {
+    type: Array,
+    required: false,
+  }
+});
+
+const emit = defineEmits(['nav-back']);
 
 //add logic to number the days as keys in the days dictionary, etc. 
 const addDay = (index) => {
@@ -67,6 +78,11 @@ watch(() => numDays.value, (newVal) => {
   }
 });
 
+watch(() => navBack.value, (newVal) => {
+  if(newVal){
+    emit('nav-back');
+  }
+});
 
 const formatDays = () => {
   let formatted_days = [];
@@ -116,12 +132,18 @@ const formatDays = () => {
 
 const addProgram = async () => {
   let days_input = formatDays();
-  console.log(days_input);
+  let slug = title.value.toLowerCase().replace(/\s+/g, '-');
+  console.log('slug:', slug);
+  if (props.existingSlugs.includes(slug)) {
+    console.log('slug already exists');
+    errorMessage.value = 'Program with this title already exists';
+    return;
+  }
   try {
     const response = await createProgram.mutate({
       title: title.value,
       notes: notes.value,
-      slug: title.value.toLowerCase().replace(/\s+/g, '-'),
+      slug: slug,
       author: userStore.getUser.username, // Get the current user
       tags: tags.value,
       assignedAthletes: [],
@@ -129,7 +151,8 @@ const addProgram = async () => {
     });
 
     program_id.value = response.data.createProgram.program.id;
-    console.log(program_id.value);
+    navBack.value = true;
+    
     //addDays();
     /*
     title.value = '';
@@ -137,13 +160,16 @@ const addProgram = async () => {
   } catch (error) {
     console.error(error);
   }
+  errorMessage.value = '';
 };
 
 </script>
 
 <template>
+
   <div class="container">
-    <div style="display: flex;">
+    <div style="display: flex; padding-bottom: 10px;">
+      <button class='simple-button' @click="navBack = true">Back to Program List</button>
       <input 
         type="text" 
         v-model="title" 
@@ -154,10 +180,10 @@ const addProgram = async () => {
         placeholder="Untitled Program"
         @keydown.enter="$event.target.blur()"
       />
-      <div> # Days 
-        <select v-model="numDays">
-          <option v-for="n in 21" :key="n-1" :value="n-1">{{ n-1 }}</option>
-        </select>
+      <div>  
+        <input v-model="numDays" type="number" style="width: 40px; font-size: 22px"/>
+        <span style="font-size: 22px; font-weight: bold;"> Days </span> 
+          
       </div>
     </div>
     <div class="days">
@@ -180,7 +206,7 @@ const addProgram = async () => {
             <ExerciseList :workout="workout" :currentDay="currentDay == day"/>
           </div>
          
-        <button v-if="currentDay == day" style="width: 100px;" @click="addWorkout(day)">Add Workout</button>
+        <button class='simple-button' v-if="currentDay == day" @click="addWorkout(day)">Add Workout</button>
       </div>
         
       </div>
@@ -195,10 +221,10 @@ const addProgram = async () => {
           </span>
            -->
     </div> 
-    <div class="bottom-row">
-      <button v-show="!showNotes" @click="showNotes = true"> Add Note </button>
-      <textarea v-if="showNotes" style="width: 50%" id="notes" v-model="notes" placeholder="Notes"></textarea>
-      <button type="submit" @click="addProgram()">Save</button>
+    <div class="bottom-row" style="width: 50%;">
+      <textarea style="width: 100%" id="notes" v-model="notes" placeholder="Notes"></textarea>
+      <button type="submit" class="simple-button" @click="addProgram()">Save</button>
+      <p> {{ errorMessage }} </p>
     </div>
   </div>
 </template>
@@ -206,10 +232,11 @@ const addProgram = async () => {
 <style scoped>
 
   .container{
-    height: 85vh;
+    height: 83vh;
     width: 80vw;
     display: flex;
     flex-direction: column;
+    border-radius: 5px;
   }
   
   label {
@@ -217,10 +244,6 @@ const addProgram = async () => {
     margin-top: 1rem;
   } 
 
-  button:hover {
-    cursor: pointer;
-    font-weight: bold;
-  }
   td{
     width: 75px;
   }
@@ -230,13 +253,15 @@ const addProgram = async () => {
     align-items: center;
     overflow-x: scroll;
     max-width: 80vw;
-    height: 100%;
+    height: 90%;
   }
 
   .day-container{ 
-    background-color:#f7f5f5b2;
+    background-color: lightgray;
+    border: 2px solid gray; 
     border-radius: 5px;
     min-width: 150px;
+    max-width: 400px;
     margin: 10px;
     display: flex; 
     height: 100%;
@@ -252,10 +277,6 @@ const addProgram = async () => {
 
   .day-container:hover{
     cursor: pointer;
-  }
-
-  button{
-    border: none
   }
 
   .current-day{
@@ -285,6 +306,7 @@ const addProgram = async () => {
     display: flex;
     flex-direction: column;
     margin: 5px;
+    max-width: 380px;
   }
 
   .blockA{
@@ -329,20 +351,6 @@ const addProgram = async () => {
     color: black;
   }
 
-
-  .container{
-    background-color: white;
-    padding: 30px;
-  }
-
-  .delete-button{
-    background-color: red;
-    color: white;
-    border: none;
-    padding: 10px;
-    margin: 10px;
-  }
-
   .delete-exercise{
     margin-left: auto;
   }
@@ -373,9 +381,9 @@ const addProgram = async () => {
   }
 
   .bottom-row{
-    border: 1px solid blue; 
+    padding-top: 10px;  
     position: absolute;
-    bottom: 10%;
+    bottom: 3%;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -387,4 +395,8 @@ const addProgram = async () => {
     justify-content: space-between;
   }
   
+  .simple-button{ 
+    background: var(--midnight-blue);
+    color: white; 
+  }
 </style>

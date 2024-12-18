@@ -11,14 +11,17 @@ const showGroupOptions = ref({});
 const selectedGroup = ref({});
 const newGroupName = ref('');
 
-const { result, loading, error } = useQuery(gql` 
+const { result, refetch: refetchAthletes, error } = useQuery(gql` 
   query{
     allAthletesByCoach(coachUsername: "${userStore.getUser.username}") {
       id
       username
+      firstName
+      lastName
       coach {
         id
         username
+        
       }
   }
   }`,
@@ -31,7 +34,7 @@ const { result, loading, error } = useQuery(gql`
   }
 );
 
-const { result: groups } = useQuery(gql` 
+const { result: groups, refetch: refetchGroups } = useQuery(gql` 
   query{
     groupsByCoach(coach: "${userStore.getUser.username}") {
       name
@@ -42,6 +45,8 @@ const { result: groups } = useQuery(gql`
       athletes{
         id
         username
+        firstName
+        lastName
       }
   }
   }`,
@@ -67,7 +72,7 @@ const addAthlete = async () => {
     console.error(error);
   }
   athleteUsername.value = '';
-
+  refetchAthletes();
 };
 
 const addAthleteMutation = useMutation(ADD_ATHLETE, {
@@ -96,6 +101,7 @@ const confirmGroupSelection = async (athleteId) => {
     console.error(error);
   }
   showGroupOptions.value[athleteId] = false;
+  refetchGroups();
 };
 
 const addAthleteToGroupMutation = useMutation(ADD_ATHLETE_TO_GROUP);
@@ -112,6 +118,7 @@ const createNewGroup = async () => {
   catch (error) {
     console.error(error);
   }
+  refetchGroups();
 
 };
 
@@ -138,7 +145,7 @@ const createNewGroupMutation = useMutation(CREATE_WORKOUT_GROUP, {
         <h3>{{ group.name }}</h3>
         <ul>
           <li v-for="athlete in group.athletes" :key="athlete.id">
-            {{ athlete.username }}
+            {{ athlete.firstName && athlete.lastName ? athlete.firstName + ' ' + athlete.lastName : athlete.username }} 
           </li>
         </ul>
 
@@ -153,8 +160,11 @@ const createNewGroupMutation = useMutation(CREATE_WORKOUT_GROUP, {
         <button class='simple-button' @click="addAthlete">Add Athlete</button>
       </div>
       <div v-for="athlete in result.allAthletesByCoach" :key="athlete.id">
-        {{ athlete.username }}
-        <button @click="showGroupOptions[athlete.id]=true">Add to group</button>
+        <RouterLink :to="{ name: 'athlete', params: { athleteUsername: athlete.username } }">
+          {{ athlete.firstName && athlete.lastName ? athlete.firstName + ' ' + athlete.lastName : athlete.username }}
+        </RouterLink>
+        <button style="margin-left:5px;" @click="showGroupOptions[athlete.id]=true">Add to group</button>
+        
         <template v-if="showGroupOptions[athlete.id]">
           <select v-model="selectedGroup[athlete.id]">
             <option v-for="group in groups.groupsByCoach" :value="group.id">{{ group.name }}</option>

@@ -7,6 +7,7 @@ import AthletesView from "../views/AthletesView.vue";
 import ProfileView from "../views/ProfileView.vue";
 import SettingsView from "../views/SettingsView.vue";
 import WorkoutView from "../views/WorkoutView.vue"; 
+import AthleteView from "../views/AthleteView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -50,6 +51,12 @@ const router = createRouter({
       path: "/workout/:workoutId",
       name: "workout",
       component: WorkoutView,
+      props: true,
+    },
+    {
+      path: "/athlete/:athleteUsername",
+      name: "athlete",
+      component: AthleteView,
       props: true,
     }
 

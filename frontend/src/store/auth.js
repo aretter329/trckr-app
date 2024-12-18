@@ -98,8 +98,6 @@ export const useAuthStore = defineStore('auth', {
       We save state to local storage to keep the
       state when the user reloads the page.
 
-      This is a simple way to persist state. For a more robust solution,
-      use pinia-persistent-state.
        */
       localStorage.setItem('authState', JSON.stringify({
         user: this.user,

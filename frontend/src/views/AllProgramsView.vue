@@ -13,7 +13,7 @@ const userStore = useUserStore();
 const username = userStore.getUser.username;
 const is_coach = userStore.getUser.isCoach; 
 
-const { result: authoredPrograms, loading, error } = useQuery(gql` 
+const { result: authoredPrograms, loading, error, refetch:refetchPrograms } = useQuery(gql` 
   query{
     programsByAuthor(username: "${username}") {
       title
@@ -39,6 +39,8 @@ const { result: authoredPrograms, loading, error } = useQuery(gql`
     }
   }
 );
+
+
 
 const CREATE_TAG = gql`
   mutation CreateTag($name: String!){
@@ -80,8 +82,12 @@ const addTag = async () => {
 <template>
   <div class="container">
     <div style="width: 80%; display: flex; flex-direction: column; align-items: center;">
-      <div v-show="writeProgram" style="width: 100%">
-        <WriteProgram/>
+      <div v-if="writeProgram && authoredPrograms" style="width: 100%">
+        <WriteProgram  
+          :existingSlugs="authoredPrograms ? authoredPrograms.programsByAuthor.map(program => program.slug) : []"
+          @nav-back="writeProgram = false; refetchPrograms();"
+        />
+      
        </div>
 
       <div v-if="is_coach && !writeProgram" class="list-div">

@@ -28,6 +28,7 @@ const logout = () => {
 
 watch(() => user.value.token, (newToken, oldToken) => {
   console.log('token changed');
+  showMenu.value = false;
   if (!user.value.token) {
     user.value.isAuthenticated = false;
     router.push("/login");
@@ -121,13 +122,12 @@ watch(() => user.value.token, (newToken, oldToken) => {
   body{
     padding-top: 2rem;
     background-color: var(--uranian-blue); 
-
-    
   }
 
   .active {
     font-weight: bold;
-    background-color: var(--uranian-blue);
+    background-color: var(--midnight-blue);
+    color: white;
   }
 
   .dropdown-menu {

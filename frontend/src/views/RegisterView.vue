@@ -4,6 +4,7 @@
 import { ref } from 'vue';
 import { USER_SIGNUP } from '@/mutations';
 import { useMutation } from "@vue/apollo-composable";
+import router from '@/router';
 
 const username = ref('');
 const email = ref('');
@@ -48,8 +49,8 @@ const register = async () => {
       password: password.value,
       isCoach: role.value === 'coach',
       isAthlete: role.value === 'athlete',
-      firstName: firstName.value,
-      lastName: lastName.value
+      firstName: firstName.value.charAt(0).toUpperCase() + firstName.value.slice(1),
+      lastName: lastName.value.charAt(0).toUpperCase() + lastName.value.slice(1)
     });
     firstName.value = '';
     lastName.value = '';
@@ -58,6 +59,7 @@ const register = async () => {
     password.value = '';
     confirmPassword.value = '';
     console.log(response);
+    router.push('/login');
   }
   catch (error) {
     console.error(error);
@@ -72,7 +74,7 @@ const register = async () => {
 <template>
   <div class="centered-content">
     <h2>Register</h2>
-    <form @submit.prevent="register" >
+    <form @submit.prevent="register" style="display: flex; flex-direction: column;" >
       <div> 
         <label for="firstName">First Name:</label>
         <input v-model="firstName" id="firstName" type="text" required>
@@ -110,7 +112,7 @@ const register = async () => {
         <label for="coach">Coach</label>
         
       </div>
-        <button type="submit">Register</button>
+        <button class="simple-button" type="submit">Register</button>
     </form>
     <p v-if="error">{{ error }}</p>
     <p v-if="success">{{ success }}</p>
@@ -135,20 +137,6 @@ input[type="password"] {
 
 input[type="radio"] {
   margin: 5px;
-}
-
-button {
-  width: 100%;
-  padding: 10px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #0056b3;
 }
 
 p {

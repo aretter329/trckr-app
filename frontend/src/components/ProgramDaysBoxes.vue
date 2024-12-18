@@ -65,7 +65,7 @@ const { result, loading, error } = useQuery(gql`
 
 <template> 
   <div v-if="result && result.programDays" class="main">
-    <button v-show="allowAssignment" @click="showAssignment=true"> Assign Program</button>
+    <button class='simple-button' v-show="allowAssignment" @click="showAssignment=true"> Assign Program</button>
     <AssignmentBox v-if="showAssignment" :coach="coach" :program="result.programDays" @showAssignment="showAssignment=false"/>
     <div class="program-days-boxes">
       <div v-for="day in result.programDays" :key="day.id" class="program-day-box">
@@ -79,7 +79,7 @@ const { result, loading, error } = useQuery(gql`
                 <div v-for="exercise in block.exercises" :key="exercise.id">
                   {{ exercise.name }} <br/>
                   <div class="set-list">
-                    {{ exercise.sets.map(set => `${set.reps} @ ${set.weight}`).join(', ') }}
+                    {{ exercise.sets.length }} x {{ exercise.sets.map(set => set.reps).join(', ') }}
                   </div>
                 </div>
               </div>  
@@ -104,7 +104,9 @@ const { result, loading, error } = useQuery(gql`
 .workout-box{
   margin: 10px;
   padding: 10px;
-  background-color: lightgray; 
+  background-color: lightgray;
+  border: 3px solid gray;
+  border-radius: 5px; 
 }
 
 .day-name{
@@ -113,9 +115,12 @@ const { result, loading, error } = useQuery(gql`
 }
 
 .main{
-  border-top: 2px solid black; 
   display: flex; 
   flex-direction: column; 
   align-items: center;
+}
+
+.set-list{
+  margin-bottom: 5px;
 }
 </style> 

@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from graphene_django import DjangoObjectType
 from coach import models
 import graphql_jwt
+import datetime
 
 class UserType(DjangoObjectType):
     class Meta:
@@ -286,8 +287,34 @@ class AddExerciseName(graphene.Mutation):
         exercise = models.ExerciseName(name=name, author=author)
         exercise.save()
         return AddExerciseName(exercise=exercise)
-
     
+class UpdatePassword(graphene.Mutation):
+    class Arguments:
+        new_password = graphene.String(required=True)
+        username = graphene.String()
+    
+    user = graphene.Field(UserType)
+
+    def mutate(self, info, new_password, username):
+        user = models.User.objects.get(username=username)
+        user.set_password(new_password)
+        user.save()
+        return UpdatePassword(user=user)
+    
+class AssignProgram(graphene.Mutation):
+    program = graphene.Field(ProgramType)
+
+    class Arguments:
+        program_id = graphene.ID(required=True)
+        athlete_username = graphene.String(required=True)
+
+    def mutate(self, info, program_id, athlete_username):
+        program = models.Program.objects.get(id=program_id)
+        athlete = models.User.objects.get(username=athlete_username)
+        program.assigned_athletes.add(athlete)
+        program.save()
+        return AssignProgram(program=program)
+
 class Mutation(graphene.ObjectType):
     #creating new entries
     create_tag = CreateTag.Field()
@@ -300,6 +327,7 @@ class Mutation(graphene.ObjectType):
     token_auth = ObtainJSONWebToken.Field()
     verify_token = graphql_jwt.Verify.Field()
     refresh_token = graphql_jwt.Refresh.Field()
+    update_password = UpdatePassword.Field()
 
     #coach actions
     add_athlete = AddAthlete.Field()
@@ -320,19 +348,6 @@ class Query(graphene.ObjectType):
             .filter(author__username=username)
         )
     
-    programs_by_tag = graphene.List(ProgramType, tag=graphene.String())
-    def resolve_programs_by_tag(root, info, tag):
-        return (
-            models.Program.objects.prefetch_related("tags")
-            .select_related("author")
-            .filter(tags__name__iexact=tag)
-        )
-    
-    program_days = graphene.List(DayType, program_id=graphene.ID())
-    def resolve_program_days(root, info, program_id):
-        program = models.Program.objects.get(id=program_id)
-        return program.days.prefetch_related("workouts__blocks__exercises__sets")
-    
     all_athletes_by_coach = graphene.List(UserType, coach_username=graphene.String())
     def resolve_all_athletes_by_coach(root, info, coach_username):
         coach = models.User.objects.get(username=coach_username)
@@ -347,10 +362,24 @@ class Query(graphene.ObjectType):
         athlete = models.User.objects.get(username=athlete_username)
         return models.LoggedWorkout.objects.filter(athlete=athlete)
     
+    programs_by_tag = graphene.List(ProgramType, tag=graphene.String())
+    def resolve_programs_by_tag(root, info, tag):
+        return (
+            models.Program.objects.prefetch_related("tags")
+            .select_related("author")
+            .filter(tags__name__iexact=tag)
+        )
+    
+    program_days = graphene.List(DayType, program_id=graphene.ID())
+    def resolve_program_days(root, info, program_id):
+        program = models.Program.objects.get(id=program_id)
+        return program.days.prefetch_related("workouts__blocks__exercises__sets")
+    
+    
+    
     groups_by_coach = graphene.List(WorkoutGroupType, coach=graphene.String())
     def resolve_groups_by_coach(root, info, coach):
         return models.WorkoutGroup.objects.filter(coach__username=coach)
-
 
     logged_workout_by_id = graphene.Field(LoggedWorkoutType, logged_workout_id=graphene.ID())
     def resolve_logged_workout_by_id(root, info, logged_workout_id):
@@ -363,7 +392,18 @@ class Query(graphene.ObjectType):
     workout_groups_by_coach = graphene.List(WorkoutGroupType, coach_username=graphene.String())
     def resolve_workout_groups_by_coach(root, info, coach_username):
         return models.WorkoutGroup.objects.filter(coach__username=coach_username)
-
-
     
+    user_info = graphene.Field(UserType, username=graphene.String())
+    def resolve_user_info(root, info, username):
+        return models.User.objects.get(username=username)
+    
+    athletes_with_workout_on_date = graphene.List(UserType, coach_username=graphene.String(), date=graphene.Date())
+    def resolve_athletes_with_workout_on_date(root, info, coach_username, date):
+        coach = models.User.objects.get(username=coach_username)
+        athletes = models.User.objects.filter(coach=coach)
+        return [athlete for athlete in athletes if models.LoggedWorkout.objects.filter(athlete=athlete, assigned_date=date)]
+
+     
+
+
 schema = graphene.Schema(query=Query, mutation=Mutation)

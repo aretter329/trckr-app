@@ -211,3 +211,19 @@ export const ADD_ATHLETE = gql`
       }
     }
   }`;
+
+  export const UPDATE_PASSWORD = gql`
+  mutation (
+    $username: String!
+    $newPassword: String!
+  ) {
+    updatePassword(
+      username: $username
+      newPassword: $newPassword
+    ) {
+      user {
+        id
+        username
+      }
+    }
+  }`;

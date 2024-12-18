@@ -14,6 +14,7 @@ const userStore = useUserStore();
 const username = userStore.getUser.username;
 const showList = ref(false);
 const numSets = ref('');
+const newEx = ref(false);
 const numBlocks = ref('');
 const props = defineProps({
   workout: {
@@ -90,9 +91,12 @@ const addExerciseName = async (name) => {
   } catch (error) {
     console.error(error);
   }
+  currentExercise.value.name = name;
+  newEx.value = false;
+  refetchNames();
 };
 
-const { result: exerciseNames, loading, error } = useQuery(gql` 
+const { result: exerciseNames, loading, error, refetch: refetchNames } = useQuery(gql` 
   query{
     exerciseNamesByAuthor(author: "${username}") {
       name
@@ -161,12 +165,21 @@ const updateSets = (exercise) => {
             </div>
             <div v-else class="exercise-container editing">
               <!--- edit mode -->
-              Exercise <SearchBar 
+              
+              <div  v-if='newEx'>
+                <input type="text" v-model="newExerciseName" placeholder="New Exercise Name" />
+                <button @click="addExerciseName(newExerciseName)">Add Exercise</button>
+              </div>
+              
+            <div v-else>
+             <SearchBar 
+                        :placeholder="'Exercise Name'"
                         :selectedItem="exercise"
                         :items="exerciseNames.exerciseNamesByAuthor" 
                         @update:selectedItem="currentExercise.name = $event.name"/>
               <br/>
-              
+              <button @click="newEx=true"> New Exercise? </button>
+            </div>
               <div class="sets" v-if="exercise.name">
                 <label> # Sets </label>
                 <select v-model="exercise.numSets" @change="updateSets(exercise)">
@@ -201,8 +214,7 @@ const updateSets = (exercise) => {
 
   <!--<div class="title-row">
          LOGIC TO ADD NEW EXERCISE NAME-- NOT SURE WHERE TO PUT YET 
-        <input type="text" v-model="newExerciseName" placeholder="New Exercise Name" />
-        <button @click="addExerciseName(newExerciseName)">Add Exercise</button>
+        
         <font-awesome-icon icon="trash" @click="deleteBlock(index)"/>
       </div>-->
 

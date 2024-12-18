@@ -9,6 +9,11 @@ const props = defineProps({
   selectedItem: {
     type: Object,
     required: false,
+  },
+  placeholder: {
+    type: String,
+    required: false,
+    default: 'Search...',
   }
 });
 
@@ -45,6 +50,7 @@ const selectItem = (item) => {
          v-model="search" 
          style="width: 150px;"  
          @click="keepOpen = true"
+         :placeholder="placeholder"
         />
 
   <ul v-if="showList" class="search-list">

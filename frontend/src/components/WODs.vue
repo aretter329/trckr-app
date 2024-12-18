@@ -21,17 +21,24 @@ const calendar = ref(null);
   POPOVER  can have a brief description of the workout (this is only helpful on desktop)
   */
   
-const date= ref(new Date());
-const attrs = ref([]);
-const selectedWorkouts = computed(() => {
+const date = ref(new Date()); //default to current date
+const attrs = ref([]);  //array of objects with date and workout info
+const selectedWorkouts = computed(() => { //array of workouts for the selected date
   if (date.value === null || attrs.value == []) {
     return [];
   }
   const dateInfo = attrs.value.filter(attr => attr.dates.toDateString() === date.value.toDateString());
+  console.log('date info', dateInfo);
   if (!dateInfo.some(attr => attr.popover)) {
     return [];
   }
-  return [dateInfo[0].popover.content];
+  console.log(dateInfo);
+  //return [dateInfo[1].popover.content];
+  if (dateInfo[1] && dateInfo[1].popover) {
+    return [dateInfo[1].popover.content];
+  } else {
+    return [dateInfo[0].popover.content];
+  }
 });
 const emit = defineEmits(['updateDate']);
 
@@ -97,7 +104,9 @@ watchEffect(() => {
 
 const handleDate = (date) => {
   if (attrs.value.length > 0) {
+    console.log('date', date);
     const selectedDate = attrs.value.find(attr => attr.dates.toDateString() === date.toDateString());
+    console.log(selectedDate);
     if (selectedDate && selectedDate.workout) {
       router.push({ name: 'workout', params: { workoutId: selectedDate.workout.id } });
     }
@@ -107,8 +116,10 @@ const handleDate = (date) => {
 </script> 
 
 <template>
+  
   <div v-if="workouts" class="calendar-container"> 
       <VDatePicker 
+        style="width: 300px;"
         ref="calendar" 
         transparent 
         borderless 
@@ -121,12 +132,10 @@ const handleDate = (date) => {
       
       <div v-if="selectedWorkouts && selectedWorkouts.length > 0">
         <RouterLink :to="{ name: 'workout', params: { workoutId: selectedWorkouts[0].id } }">
-          View workout
+          View today's workout
         </RouterLink>
       </div>
-      <div v-else>
-        No workout assigned 
-      </div>
+      
       
   </div> 
 </template>

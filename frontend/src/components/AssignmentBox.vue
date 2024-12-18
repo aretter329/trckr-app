@@ -87,6 +87,8 @@ const { result, loading, error } = useQuery(gql`
     allAthletesByCoach(coachUsername: "${props.coach}") {
       id
       username
+      firstName
+      lastName
       coach {
         id
         username
@@ -113,6 +115,8 @@ const { result: workoutGroups } = useQuery(gql`
       athletes {
         id
         username
+        firstName
+        lastName
       }
     }
   }
@@ -157,13 +161,13 @@ const { result: workoutGroups } = useQuery(gql`
       <div v-if="result && result.allAthletesByCoach">
         <div v-for="athlete in result.allAthletesByCoach" :key="athlete.id">
           <input type="checkbox" :id="athlete.id" v-model="selectedAthletes" :value="athlete.username">
-          <label :for="athlete.id">{{ athlete.username }}</label>
+          <label :for="athlete.id"> {{ athlete.firstName && athlete.lastName ? athlete.firstName + ' ' + athlete.lastName : athlete.username }}</label>
         </div>
       </div>
     </div>
     
   </div>
-    <button @click="assignToAthletes"> confirm </button>
+    <button class='simple-button' style='font-weight: bold;' @click="assignToAthletes"> confirm </button>
 </template> 
 
 <style scoped>
@@ -171,6 +175,10 @@ const { result: workoutGroups } = useQuery(gql`
     margin-left: 50px;
     margin-right: 50px;
     padding: 10px; 
+  }
+
+  input{
+    margin-right: 5px;
   }
 
 </style> 

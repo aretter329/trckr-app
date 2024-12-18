@@ -33,9 +33,14 @@ const login = async () => {
     userStore.setUser(user.data.tokenAuth.user);
     router.push('/');
   }
-  catch (error) {
-    console.error(error);
+  catch (err) {
+    error.value = err.message;
+    console.error(err);
   }
+};
+
+const resetError = () => {
+  error.value = '';
 };
 
 </script>
@@ -43,12 +48,9 @@ const login = async () => {
 <template>
   
   <div class="login centered-content"> 
-    <h2> Login </h2>
-    <div>
-      Need an account?
-      <button @click="router.push('/register')">Register</button>
-    </div>
-    <form @submit.prevent="login">
+    <h1 style="font-size: 50px; margin-bottom: 20px;"> Trckr </h1>
+    
+    <form style="display: flex; flex-direction: column; align-items: center;" @submit.prevent="login">
       <div> 
         <label for="username"> Username </label>
         <input v-model="username" type="text" id="username" name="username" required @input="resetError">
@@ -57,14 +59,29 @@ const login = async () => {
         <label for="password"> Password </label>
         <input v-model="password" type="password" id="password" name="password" required @input="resetError">
       </div>
-    <button type="submit"> Login </button>
+      <button class='simple-button' style="width: 75px" type="submit"> Login </button>
   </form>
+
   <p v-if="error" class="error"> {{ error }} </p>
+
+  <div style="margin: 10px; display: flex; flex-direction: column; align-items: center;">
+     <div> Need an account? </div>
+     <div> <button class='simple-button'  @click="router.push('/register')">Register</button> </div>
+    </div>
   </div>
+
+  
 
   
 </template>
 
 
 <style scoped>
+.login {
+  display: flex; 
+  margin-top: 100px;
+  align-items: center;
+}
+
+
 </style>
